@@ -29,63 +29,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef GPIO_H
-#define GPIO_H
 
-#include <string>
+#ifndef DEVICE_PARAMETERS_H
+#define DEVICE_PARAMETERS_H
 
-namespace aditof {
-  
-enum api_Values {
-    API_NOT_DEFINED,
-    FIND_SENSORS,
-    OPEN,
-    START,
-    STOP,
-    GET_AVAILABLE_MODES,
-    GET_MODE_DETAILS,
-    SET_MODE,
-    SET_MODE_BY_INDEX,
-    GET_FRAME,
-    GET_AVAILABLE_CONTROLS,
-    SET_CONTROL,
-    GET_CONTROL,
-    INIT_TARGET_DEPTH_COMPUTE,
-    ADSD3500_READ_CMD,
-    ADSD3500_WRITE_CMD,
-    ADSD3500_READ_PAYLOAD_CMD,
-    ADSD3500_READ_PAYLOAD,
-    ADSD3500_WRITE_PAYLOAD_CMD,
-    ADSD3500_WRITE_PAYLOAD,
-    ADSD3500_GET_STATUS,
-    GET_INTERRUPTS,
-    HANG_UP,
-    GET_INI_PARAM,
-    SET_INI_PARAM,
-    SET_SENSOR_CONFIGURATION,
-    GET_INI_ARRAY
-};
+#include "ini_file_definitions.h"
+#include <aditof/status_definitions.h>
+#include <vector>
 
-enum protocols { PROTOCOL_EXAMPLE, PROTOCOL_COUNT };
-
-class Gpio {
+class DeviceParameters {
   public:
-    Gpio(const std::string &charDeviceName, int gpioNumber);
-    int openForRead();
-    int openForWrite();
-    int close();
-    int writeValue(int value);
-    int readValue(int &value);
-
-  private:
-    int open(int openType);
-
-  private:
-    std::string m_charDevName;
-    int m_lineHandle;
-    int m_gpioNumber;
+    static aditof::Status
+    createIniParams(std::vector<iniFileStruct> &iniFileStructList);
 };
 
-} // namespace aditof
-
-#endif /* GPIO_H */
+#endif
