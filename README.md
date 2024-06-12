@@ -48,38 +48,19 @@ For more details about the SDK check the links below:
 
 [API Doxygen documentation](https://analogdevicesinc.github.io/ToF/)
 
-[Building and installing the SDK](cmake/)
+[Building and installing the SDK](cmake)
 
 ## SDK Examples
-| Example | Language | Description |
-| --------- | ------------- | ----------- |
-| tof-viewer | <a href="examples/tof-viewer"> C++ </a> | Graphical User interface for visualising stream from depth camera |
-| data-collect | <a href="examples/data_collect"> C++ </a> | A command line application that takes in command line input arguments (like number of frames, mode to be set, folder location to save frame data) and captures the frames and stores in path provided |
-| first-frame | <a href="examples/first-frame"> C++ </a> <br> <a href="bindings/python/examples/first_frame"> Python </a> | An example code that shows the steps required to get to the point where camera frames can be captured. |
-| low_level_example | <a href="bindings/python/examples/low_level_example"> Python</a> | A simple example of how to get access to the low-level API of the camera. |
-| ROS2 CPP Wrapper | <a href="bindings/ros2/"> ROS2/C++</a> | ROS2 binding that publishes topics |
-
-## Other Examples
-| Example | Language | Description |
-| --------- | ------------- | ----------- |
-| ROS2 Application | <a href="https://github.com/analogdevicesinc/adi_3dtof_adtf31xx"> C++ </a> | A more extensive ROS2 example based on the ADI ToF SDK. |
-| Stitching Algorithm | <a href="https://github.com/analogdevicesinc/adi_3dtof_image_stitching"> C++ </a> | A stiching algorithm using ADI ToF data. |
+The list of examples can be found at [this link.](https://github.com/analogdevicesinc/ToF?tab=readme-ov-file#sdk-examples)
 
 ## Directory Structure
 | Directory | Description |
 | --------- | ----------- |
-| apps | Applications specific to various targets and hosts |
-| bindings | SDK bindings to other languages |
 | ci | Useful scripts for continuous integration |
 | cmake | Helper files for cmake |
 | dependencies | Contains third-party and owned libraries |
 | doc | Documentation |
-| drivers | Holds drivers for nxp and nvidia |
-| examples | Example code for the supported programming languages |
-| scripts | Useful development scripts |
-| sdcard-images-utils | Things required to build a SD card image for targets |
 | sdk | SDK source code |
-| tools | Standalone applications |
 
 ---
 **Known issues**
