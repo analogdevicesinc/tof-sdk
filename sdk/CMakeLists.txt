@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(aditof)
 
+############################### Version #######################################
+configure_file(../cmake/version.h.cmakein ${CMAKE_CURRENT_SOURCE_DIR}/include/aditof/version.h @ONLY)
+
 if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE "1")
 endif()
@@ -33,11 +36,11 @@ if(WITH_PROTOBUF_DEPENDENCY)
 endif()
 
 file(GLOB SOURCES
-    ${CMAKE_SOURCE_DIR}/sdk/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
 file(GLOB HEADERS
-    ${CMAKE_SOURCE_DIR}/sdk/include/aditof/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/aditof/*.h
 )
 
 set(CAMERA_DIR "cameras/itof-camera")
