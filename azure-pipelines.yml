@@ -8,11 +8,7 @@ variables:
   BUILD_DIR:  "$(WORK_DIR)/build"
   DEPS_DIR: "$(BUILD_DIR)/deps"
   DEFAULT_CMAKE_FLAGS: "-DWITH_NETWORK=1 \
-                        -DWITH_PYTHON=1 \
-                        -DWITH_OPENCV=1 \ 
-                        -DWITH_EXAMPLES=1 \
                         -DWITH_DOC=0 \
-                        -DWITH_OPEN3D=0 \ 
                         -DCI_BUILD=1"
   NUM_JOBS: 4
   IS_PULL_REQUEST: ${{ eq('$(Build.Reason)', 'PullRequest') }}
