@@ -190,9 +190,6 @@ class Adsd3500Sensor : public aditof::DepthSensorInterface,
                                const std::string &mode,
                                std::map<std::string, std::string> &params);
     aditof::Status
-    loadLocalIniFiles(std::vector<iniFileStruct> &iniFileStructList);
-
-    aditof::Status
     mergeIniParams(std::vector<iniFileStruct> &iniFileStructList);
     aditof::Status convertIniParams(iniFileStruct &iniStruct,
                                     std::string &inistr);
