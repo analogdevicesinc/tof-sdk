@@ -68,6 +68,7 @@ Please note, ensure you are using the intended branch.
 ```console
 git clone --branch v5.0.0 --depth 1 https://github.com/analogdevicesinc/ToF
 cd ToF
+git submodule update --init
 mkdir build && cd build
 cmake -DWITH_EXAMPLES=off -DCMAKE_PREFIX_PATH="/opt/glog;/opt/protobuf;/opt/websockets" ..
 make -j4
@@ -100,6 +101,7 @@ Please note, ensure you are using the intended branch.
 ```console
 git clone --branch v5.0.0 --depth 1 https://github.com/analogdevicesinc/ToF
 cd ToF
+git submodule update --init
 mkdir build && cd build
 cmake -DWITH_EXAMPLES=on -DCMAKE_PREFIX_PATH="/opt/glog;/opt/protobuf;/opt/websockets" ..
 make -j4
@@ -107,7 +109,7 @@ make -j4
 
 ## SDK with bindings
 
-- Please check the readme files for each type of binding in the [bindings directory](../../bindings).
+- Please check the readme files for each type of binding in the [bindings directory](https://github.com/analogdevicesinc/ToF/tree/main/bindings).
 
 ## Generate doxygen documentation
 
