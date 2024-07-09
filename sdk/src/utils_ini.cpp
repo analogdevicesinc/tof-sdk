@@ -35,11 +35,15 @@
 #include <glog/logging.h>
 #else
 #include <aditof/log.h>
-#include <cstring>
-#include <unistd.h>
 #endif
+#include <cstring>
 #include <fstream>
 #include <string>
+#ifdef _WIN32
+#include <Windows.h>
+#elif __unix
+#include <unistd.h>
+#endif
 
 using namespace std;
 using namespace aditof;
