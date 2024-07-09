@@ -20,7 +20,7 @@ set(VERSION "${ADITOF_VERSION_MAJOR}.${ADITOF_VERSION_MINOR}.${ADITOF_VERSION_PA
 option(WITH_DOC "Build documentation?" OFF)
 option(WITH_NETWORK "Build network interface?" ON)
 option(WITH_OFFLINE "Build offline interface?" OFF)
-option(WITH_GLOG_DEPENDENCY "Build with GLOG dependency to be used for logging?" ON)
+option(WITH_GLOG_DEPENDENCY "Build with GLOG dependency to be used for logging?" OFF)
 option(CI_BUILD "Build for CI" OFF)
 
 ######################### Target based Options ################################
