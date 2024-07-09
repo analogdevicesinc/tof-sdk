@@ -44,6 +44,7 @@
 #include <array>
 #include <cstdint>
 #include <fstream>
+#include <sstream>
 
 #ifdef USE_GLOG
 #include <glog/logging.h>

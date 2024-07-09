@@ -38,6 +38,7 @@
 #endif
 #include <cstring>
 #include <fstream>
+#include <sstream>
 #include <string>
 #ifdef _WIN32
 #include <Windows.h>
