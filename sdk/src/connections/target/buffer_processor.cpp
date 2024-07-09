@@ -38,6 +38,7 @@
 #include <cmath>
 #include <fcntl.h>
 #include <fstream>
+#include <unistd.h>
 #ifdef USE_GLOG
 #include <glog/logging.h>
 #else
