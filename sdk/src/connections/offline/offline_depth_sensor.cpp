@@ -5,11 +5,15 @@
 #include <dirent.h>
 #endif
 #include <fstream>
-#include <glog/logging.h>
 #include <iostream>
 #include <iterator>
 #include <map>
 #include <vector>
+#ifdef USE_GLOG
+#include <glog/logging.h>
+#else
+#include <aditof/log.h>
+#endif
 
 OfflineDepthSensor::OfflineDepthSensor(std::string path)
     : m_path(path)
@@ -41,11 +45,9 @@ OfflineDepthSensor::~OfflineDepthSensor() {
 }
 
 aditof::Status OfflineDepthSensor::getFrame(uint16_t *buffer) {
-    auto frame =
-        m_frameTypes.find(std::to_string(m_frameTypeSelected) + ".bin");
+    auto frame = m_frameTypes.find(std::to_string(m_selectedMode) + ".bin");
     if (frame == m_frameTypes.end()) {
-        LOG(WARNING) << "get frame error " << m_frameTypeSelected
-                     << " is not found";
+        LOG(WARNING) << "get frame error " << m_selectedMode << " is not found";
         return aditof::Status::GENERIC_ERROR;
     }
 
@@ -171,10 +173,10 @@ aditof::Status OfflineDepthSensor::setMode(const uint8_t &mode) {
 
 aditof::Status
 OfflineDepthSensor::setMode(const aditof::DepthSensorModeDetails &type) {
-    m_frameTypeSelected = type.modeNumber;
+    m_selectedMode = type.modeNumber;
 #ifdef TARGET
-    m_outputFrameWidth = type.content.at(1).width * 4;
-    m_outputFrameHeight = type.content.at(1).height;
+    m_outputFrameWidth = type.baseResolutionWidth * 4;
+    m_outputFrameHeight = type.baseResolutionHeight;
 #endif
 
     return aditof::Status::OK;
@@ -394,20 +396,18 @@ aditof::Status OfflineDepthSensor::initTargetDepthCompute(
     using namespace aditof;
 
 #ifdef TARGET
-    uint8_t mode;
-    ModeInfo::getInstance()->convertCameraMode(m_frameTypeSelected, mode);
-
     // Initialize Depth Compute
     uint32_t status = ADI_TOFI_SUCCESS;
     ConfigFileData calDataStruct = {calData, calDataLength};
     if (iniFile != nullptr) {
         ConfigFileData depth_ini = {iniFile, iniFileLength};
         memcpy(m_xyzDealiasData, calData, calDataLength);
-        m_tofiConfig = InitTofiConfig_isp((ConfigFileData *)&depth_ini, mode,
-                                          &status, m_xyzDealiasData);
+        m_tofiConfig =
+            InitTofiConfig_isp((ConfigFileData *)&depth_ini, m_selectedMode,
+                               &status, m_xyzDealiasData);
     } else {
         m_tofiConfig =
-            InitTofiConfig(&calDataStruct, NULL, NULL, mode, &status);
+            InitTofiConfig(&calDataStruct, NULL, NULL, m_selectedMode, &status);
     }
 
     if ((m_tofiConfig == NULL) || (m_tofiConfig->p_tofi_cal_config == NULL) ||

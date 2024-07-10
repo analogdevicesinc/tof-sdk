@@ -81,7 +81,7 @@ class OfflineDepthSensor : public aditof::DepthSensorInterface {
     aditof::SensorDetails m_sensorDetails;
     std::vector<aditof::DepthSensorModeDetails> m_depthSensorModeDetails;
     std::string m_path;
-    uint8_t m_frameTypeSelected;
+    uint8_t m_selectedMode;
     std::map<std::string, std::pair<std::uint16_t *, std::size_t>> m_frameTypes;
     const std::vector<aditof::DepthSensorModeDetails> availableModes = {
         {0,
