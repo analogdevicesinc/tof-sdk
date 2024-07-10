@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(depth-compute-opensource)
 
-set (LIB_HEADERS "${CMAKE_SOURCE_DIR}/sdk/common/adi/tofi/")
+set (LIB_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../tofi/")
 
 add_library(tofi_compute SHARED src/tofiCompute.cpp ../tofi/opencv_undistort.cpp)
 target_include_directories(tofi_compute
