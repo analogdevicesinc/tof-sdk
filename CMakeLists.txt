@@ -61,6 +61,11 @@ add_definitions(-DADITOFSDK_GIT_BRANCH="${ADITOFSDK_GIT_BRANCH}")
 
 ############################## Rest of cmake ##################################
 
+# CHeck if CMAKE_BUILD_TYPE has been selected, default: Release
+if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+endif()
+
 # Check whether we configure things for remote or we're on target
 set(SELECTED_PLATFORMS 0)
 set(ALL_PLATFORMS NXP;NVIDIA)

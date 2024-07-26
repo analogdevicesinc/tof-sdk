@@ -1,0 +1,8 @@
+[submodule "libwebsockets"]
+	path = libwebsockets
+	url = https://github.com/warmcat/libwebsockets
+        branch = v3.1-stable
+[submodule "protobuf"]
+	path = protobuf
+	url = https://github.com/protocolbuffers/protobuf
+        branch = 3.9.x

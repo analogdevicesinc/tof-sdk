@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 project(aditof)
 
-############################### Version #######################################
+########################### Version #######################################
 configure_file(../cmake/version.h.cmakein ${CMAKE_CURRENT_SOURCE_DIR}/include/aditof/version.h @ONLY)
 
 if(UNIX)
@@ -12,7 +12,7 @@ add_definitions(-DSDK_EXPORTS)
 
 # Add general optimization flag
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_compile_options(-Ofast)
+    add_compile_options(-Ofast)
 endif()
 
 if(WITH_GLOG_DEPENDENCY)
@@ -22,14 +22,60 @@ if(WITH_GLOG_DEPENDENCY)
 endif()
 
 if(WITH_PROTOBUF_DEPENDENCY)
+    # Check if submodule exists, and build the library
+    if(EXISTS "${CMAKE_SOURCE_DIR}/protobuf/.git" )
+        message("Found Protobuf, building submodule...")
+        set(PROTOBUF_SUBMODULE "${CMAKE_SOURCE_DIR}/protobuf")
+        execute_process(
+            COMMAND ${CMAKE_COMMAND}
+                -B ${PROTOBUF_SUBMODULE}/build_proto
+                -S ${PROTOBUF_SUBMODULE}/cmake
+                -DCMAKE_INSTALL_PREFIX=${PROTOBUF_SUBMODULE}/install_proto
+                -Dprotobuf_BUILD_TESTS=OFF
+                -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        )
+        if (WIN32)
+            execute_process(
+                COMMAND ${CMAKE_COMMAND} --build ${PROTOBUF_SUBMODULE}/build_proto --target install --parallel --config ${CMAKE_BUILD_TYPE}
+            )
+        else()
+            execute_process(
+                COMMAND ${CMAKE_COMMAND} --build ${PROTOBUF_SUBMODULE}/build_proto --target install --parallel
+            )
+        endif()
+        set(CMAKE_PREFIX_PATH "${PROTOBUF_SUBMODULE}/install_proto" ${CMAKE_PREFIX_PATH})
+    endif()
+
     find_package(Protobuf 3.9.0 REQUIRED)
     protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS src/connections/usb/usb_buffer.proto)
     get_filename_component(GENERATED_PROTO_FILES_DIR ${PROTO_HDRS} DIRECTORY)
 
     if ( WITH_NETWORK )
+        # Check if submodule exists, and build the library
+        if(EXISTS "${CMAKE_SOURCE_DIR}/libwebsockets/.git" )
+            message("Found Websockets, building submodule...")
+            set(WEBSOCKETS_SUBMODULE "${CMAKE_SOURCE_DIR}/libwebsockets")
+            execute_process(
+                COMMAND ${CMAKE_COMMAND}
+                    -B ${WEBSOCKETS_SUBMODULE}/build_websockets
+                    -S ${WEBSOCKETS_SUBMODULE}
+                    -DCMAKE_INSTALL_PREFIX=${WEBSOCKETS_SUBMODULE}/install_websockets
+                    -DLWS_WITH_SSL=OFF
+                    -DLWS_STATIC_PIC=ON
+            )
+            if (WIN32)
+                execute_process(
+                    COMMAND ${CMAKE_COMMAND} --build ${WEBSOCKETS_SUBMODULE}/build_websockets --target install --parallel --config ${CMAKE_BUILD_TYPE}
+                )
+            else()
+                execute_process(
+                    COMMAND ${CMAKE_COMMAND} --build ${WEBSOCKETS_SUBMODULE}/build_websockets --target install --parallel
+                )
+            endif()
+            set(CMAKE_PREFIX_PATH "${WEBSOCKETS_SUBMODULE}/install_websockets" ${CMAKE_PREFIX_PATH})
+            endif()
         find_package(Libwebsockets REQUIRED)
         set(LWS_CMAKE_DIR ${LWS_CMAKE_DIR} PARENT_SCOPE)
-
         protobuf_generate_cpp(NET_PROTO_SRCS NET_PROTO_HRDS src/connections/network/buffer.proto)
         get_filename_component(GENERATED_NET_PROTO_FILES_DIR ${NET_PROTO_HRDS} DIRECTORY)
     endif()
@@ -48,23 +94,23 @@ set(FRAME_DIR "cameras/itof-frame")
 set(COMMON_DIR "common/adi")
 
 if( WIN32 )
-        set(OS_SPECIFIC_DIR "connections/usb/windows")
+    set(OS_SPECIFIC_DIR "connections/usb/windows")
 elseif( APPLE )
-        set(OS_SPECIFIC_DIR "connections/usb/macos")
+    set(OS_SPECIFIC_DIR "connections/usb/macos")
 elseif ( NXP )
-        # Add optimization for specific architecture
-        if(CMAKE_BUILD_TYPE STREQUAL "Release")
-                add_compile_options(-march=armv8-a+simd)
-        endif()
-        set(OS_SPECIFIC_DIR "connections/target")
-        set(TARGET_SPECIFIC_DIR "soc/imx")
-        add_definitions(-DNXP)
+    # Add optimization for specific architecture
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        add_compile_options(-march=armv8-a+simd)
+    endif()
+    set(OS_SPECIFIC_DIR "connections/target")
+    set(TARGET_SPECIFIC_DIR "soc/imx")
+    add_definitions(-DNXP)
 elseif ( NVIDIA )
-        set(OS_SPECIFIC_DIR "connections/target")
-        set(TARGET_SPECIFIC_DIR "soc/nvidia")
-        add_definitions(-DNVIDIA)
+    set(OS_SPECIFIC_DIR "connections/target")
+    set(TARGET_SPECIFIC_DIR "soc/nvidia")
+    add_definitions(-DNVIDIA)
 elseif ( UNIX )
-        set(OS_SPECIFIC_DIR "connections/usb/linux")
+    set(OS_SPECIFIC_DIR "connections/usb/linux")
 else()
     message(FATAL_ERROR "Platform not supported")
 endif()
@@ -188,31 +234,31 @@ if (WITH_GLOG_DEPENDENCY)
     )
 endif()
 
-#LIBTOFI_LIBDIR_PATH - path to libtofi_config.so and libtofi_compute.so folder	
+#LIBTOFI_LIBDIR_PATH - path to libtofi_config.so and libtofi_compute.so folder
 set(LIBTOFI_COMPUTE_CLOSED_SOURCE_PATH "${LIBTOFI_LIBDIR_PATH}/libtofi_compute.so")
 set(LIBTOFI_CONFIG_CLOSED_SOURCE_PATH "${LIBTOFI_LIBDIR_PATH}/libtofi_config.so")
 
 if ( ON_TARGET AND UNIX )
-	if (NOT USE_DEPTH_COMPUTE_OPENSOURCE)
-                add_library(libtofi_compute SHARED IMPORTED)
-                set_target_properties(libtofi_compute PROPERTIES
+    if (NOT USE_DEPTH_COMPUTE_OPENSOURCE)
+        add_library(libtofi_compute SHARED IMPORTED)
+        set_target_properties(libtofi_compute PROPERTIES
                 IMPORTED_LOCATION "${LIBTOFI_COMPUTE_CLOSED_SOURCE_PATH}"
                 IMPORTED_NO_SONAME 1
                 )
 
-                add_library(libtofi_config SHARED IMPORTED)
-                set_target_properties(libtofi_config PROPERTIES
+        add_library(libtofi_config SHARED IMPORTED)
+        set_target_properties(libtofi_config PROPERTIES
                         IMPORTED_LOCATION "${LIBTOFI_CONFIG_CLOSED_SOURCE_PATH}"
                         IMPORTED_NO_SONAME 1
                         )
 
-                target_link_libraries(${PROJECT_NAME} PRIVATE libtofi_compute)
-                target_link_libraries(${PROJECT_NAME} PRIVATE libtofi_config)
+        target_link_libraries(${PROJECT_NAME} PRIVATE libtofi_compute)
+        target_link_libraries(${PROJECT_NAME} PRIVATE libtofi_config)
     else()
         target_link_libraries(${PROJECT_NAME} PRIVATE tofi_compute)
         target_link_libraries(${PROJECT_NAME} PRIVATE tofi_config)
     endif()
-endif()	
+endif()
 
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -247,7 +293,7 @@ if (ON_TARGET) # ON TARGET
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     else() # CLOSED SOURCE LIBRARIES
-        install(TARGETS aditof 
+        install(TARGETS aditof
             EXPORT aditof-targets
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
