@@ -35,7 +35,7 @@
 #include <string>
 
 namespace aditof {
-  
+
 enum api_Values {
     API_NOT_DEFINED,
     FIND_SENSORS,
