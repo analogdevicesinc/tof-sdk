@@ -34,13 +34,106 @@
 #define DEVICE_PARAMETERS_H
 
 #include "ini_file_definitions.h"
+#include <aditof/sensor_definitions.h>
 #include <aditof/status_definitions.h>
 #include <vector>
 
 class DeviceParameters {
   public:
-    static aditof::Status
-    createIniParams(std::vector<iniFileStruct> &iniFileStructList);
+    static aditof::Status createIniParams(
+        std::vector<iniFileStruct> &iniFileStructList,
+        std::vector<aditof::DepthSensorModeDetails> &modeDetailsList,
+        std::string imagerType);
 };
+
+using namespace std;
+
+static map<string, string> adsd3100_partialDepth = {{"abThreshMin", "3.0"},
+                                             {"confThresh", "25.0"},
+                                             {"radialThreshMin", "30.0"},
+                                             {"radialThreshMax", "4200.0"},
+                                             {"jblfApplyFlag", "1"},
+                                             {"jblfWindowSize", "7"},
+                                             {"jblfGaussianSigma", "10.0"},
+                                             {"jblfExponentialTerm", "5.0"},
+                                             {"jblfMaxEdge", "12.0"},
+                                             {"jblfABThreshold", "10.0"},
+                                             {"headerSize", "128"},
+                                             {"inputFormat", "mipiRaw12_8"},
+                                             {"depthComputeIspEnable", "1"},
+                                             {"partialDepthEnable", "1"},
+                                             {"interleavingEnable", "0"},
+                                             {"bitsInPhaseOrDepth", "12"},
+                                             {"bitsInConf", "0"},
+                                             {"bitsInAB", "16"},
+                                             {"phaseInvalid", "0"},
+                                             {"xyzEnable", "1"},
+                                             {"fps", "10"}};
+
+static map<string, string> adsd3100_fullDepth = {{"abThreshMin", "3.0"},
+                                          {"confThresh", "25.0"},
+                                          {"radialThreshMin", "100.0"},
+                                          {"radialThreshMax", "10000.0"},
+                                          {"jblfApplyFlag", "1"},
+                                          {"jblfWindowSize", "7"},
+                                          {"jblfGaussianSigma", "10.0"},
+                                          {"jblfExponentialTerm", "5.0"},
+                                          {"jblfMaxEdge", "12.0"},
+                                          {"jblfABThreshold", "10.0"},
+                                          {"headerSize", "128"},
+                                          {"inputFormat", "raw8"},
+                                          {"depthComputeIspEnable", "1"},
+                                          {"partialDepthEnable", "0"},
+                                          {"interleavingEnable", "1"},
+                                          {"bitsInPhaseOrDepth", "16"},
+                                          {"bitsInConf", "8"},
+                                          {"bitsInAB", "16"},
+                                          {"phaseInvalid", "0"},
+                                          {"xyzEnable", "1"},
+                                          {"fps", "16"}};
+
+static map<string, string> adsd_PCM = {{"abThreshMin", "3.0"},
+                                {"confThresh", "25.0"},
+                                {"radialThreshMin", "100.0"},
+                                {"radialThreshMax", "10000.0"},
+                                {"jblfApplyFlag", "1"},
+                                {"jblfWindowSize", "7"},
+                                {"jblfGaussianSigma", "10.0"},
+                                {"jblfExponentialTerm", "5.0"},
+                                {"jblfMaxEdge", "12.0"},
+                                {"jblfABThreshold", "10.0"},
+                                {"headerSize", "0"},
+                                {"inputFormat", "mipiRaw12_8"},
+                                {"depthComputeIspEnable", "0"},
+                                {"partialDepthEnable", "0"},
+                                {"interleavingEnable", "0"},
+                                {"bitsInPhaseOrDepth", "0"},
+                                {"bitsInConf", "0"},
+                                {"bitsInAB", "0"},
+                                {"phaseInvalid", "0"},
+                                {"xyzEnable", "0"},
+                                {"fps", "15"}};
+
+static map<string, string> adsd3030_fullDepth = {{"abThreshMin", "3.0"},
+                                          {"confThresh", "25.0"},
+                                          {"radialThreshMin", "100.0"},
+                                          {"radialThreshMax", "10000.0"},
+                                          {"jblfApplyFlag", "1"},
+                                          {"jblfWindowSize", "7"},
+                                          {"jblfGaussianSigma", "10.0"},
+                                          {"jblfExponentialTerm", "5.0"},
+                                          {"jblfMaxEdge", "12.0"},
+                                          {"jblfABThreshold", "10.0"},
+                                          {"headerSize", "128"},
+                                          {"inputFormat", "raw8"},
+                                          {"depthComputeIspEnable", "1"},
+                                          {"partialDepthEnable", "0"},
+                                          {"interleavingEnable", "1"},
+                                          {"bitsInPhaseOrDepth", "16"},
+                                          {"bitsInConf", "8"},
+                                          {"bitsInAB", "16"},
+                                          {"phaseInvalid", "0"},
+                                          {"xyzEnable", "1"},
+                                          {"fps", "40"}};
 
 #endif

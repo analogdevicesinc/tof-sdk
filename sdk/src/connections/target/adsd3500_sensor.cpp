@@ -153,8 +153,6 @@ Adsd3500Sensor::Adsd3500Sensor(const std::string &driverPath,
     m_implData->controlsCommands["confidenceBits"] = 0x9819e4;
 
     m_bufferProcessor = new BufferProcessor();
-
-    DeviceParameters::createIniParams(m_iniFileStructList);
 }
 
 Adsd3500Sensor::~Adsd3500Sensor() {
@@ -1824,6 +1822,19 @@ aditof::Status Adsd3500Sensor::queryAdsd3500() {
             }
         }
     }
+
+    if (m_implData->imagerType == SensorImagerType::IMAGER_ADSD3100) {
+        status = DeviceParameters::createIniParams(
+            m_iniFileStructList, m_availableModes, "adsd3100");
+    } else if (m_implData->imagerType == SensorImagerType::IMAGER_ADSD3030) {
+        status = DeviceParameters::createIniParams(
+            m_iniFileStructList, m_availableModes, "adsd3030");
+    }
+    if (status != Status::OK) {
+        LOG(ERROR) << "Failed to populate ini params struct!";
+        return status;
+    }
+
     mergeIniParams(m_iniFileStructList);
 
     return status;
