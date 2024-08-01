@@ -99,10 +99,10 @@ struct Adsd3500Sensor::ImplData {
     std::string fw_ver;
 
     ImplData()
-        : numVideoDevs(1),
-          videoDevs(nullptr), imagerType{SensorImagerType::IMAGER_UNKNOWN},
-          ccbVersion{CCBVersion::CCB_UNKNOWN}, modeDetails{0, {}, 0, 0, 0, 0,
-                                                           0, 0,  0, 0, {}} {}
+        : numVideoDevs(1), videoDevs(nullptr),
+          imagerType{SensorImagerType::IMAGER_UNKNOWN},
+          ccbVersion{CCBVersion::CCB_UNKNOWN},
+          modeDetails{0, {}, 0, 0, 0, 0, 0, 0, 0, 0, {}} {}
 };
 
 // TO DO: This exists in linux_utils.h which is not included on Dragoboard.
@@ -1720,19 +1720,23 @@ aditof::Status Adsd3500Sensor::queryAdsd3500() {
             m_availableModes.clear();
             m_ccbmINIContent.clear();
 
-            CcbMode modeStruct[6];
+            CcbMode modeStruct[8];
             status =
-                adsd3500_read_payload_cmd(0x24, (uint8_t *)&modeStruct[0], 156);
+                adsd3500_read_payload_cmd(0x24, (uint8_t *)&modeStruct[0], 196);
             if (status != Status::OK) {
                 LOG(ERROR) << "Failed to read mode map table from ccb!";
                 return status;
             }
 
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 8; i++) {
                 DepthSensorModeDetails modeDetails;
                 memset(&modeDetails, 0, sizeof(DepthSensorModeDetails));
 
                 modeDetails.modeNumber = modeStruct[i].CFG_mode;
+                if (modeDetails.modeNumber == 0xFF) {
+                    continue;
+                }
+
                 modeDetails.baseResolutionHeight = modeStruct[i].heigth;
                 modeDetails.baseResolutionWidth = modeStruct[i].width;
                 modeDetails.numberOfPhases = modeStruct[i].noOfPhases;
@@ -1751,17 +1755,19 @@ aditof::Status Adsd3500Sensor::queryAdsd3500() {
                 memset(&iniTableContent, 0, sizeof(IniTableEntry));
                 iniTableContent.INIIndex = modeDetails.modeNumber;
 
-                status = adsd3500_read_payload_cmd(
-                    0x25, (uint8_t *)(&iniTableContent), 0x26);
-                if (status != Status::OK) {
-                    LOG(ERROR) << "Failed to read ini content from nvm";
-                    return status;
-                }
+                if (!modeDetails.isPCM) {
+                    status = adsd3500_read_payload_cmd(
+                        0x25, (uint8_t *)(&iniTableContent), 0x26);
+                    if (status != Status::OK) {
+                        LOG(ERROR) << "Failed to read ini content from nvm";
+                        return status;
+                    }
 
-                if (iniTableContent.INIIndex == 0xFF) {
-                    LOG(INFO) << "No ini content for mode "
-                              << modeDetails.modeNumber << " in nvm!";
-                    continue;
+                    if (iniTableContent.INIIndex == 0xFF) {
+                        LOG(INFO) << "No ini content for mode "
+                                  << (int)modeDetails.modeNumber << " in nvm!";
+                        continue;
+                    }
                 }
 
                 iniTableContent.modeNumber = modeDetails.modeNumber;

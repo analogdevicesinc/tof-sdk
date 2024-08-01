@@ -47,10 +47,10 @@ struct CcbMode {
     uint8_t P0Mode;
     uint8_t TempMode;
     uint8_t INIIndex;
-    uint16_t default_mode;
-    uint16_t isPCM;
-    uint16_t noOfPhases;
-    uint16_t spare3;
+    uint8_t default_mode;
+    uint8_t isPCM;
+    uint8_t noOfPhases;
+    uint8_t noOfCaptures;
     uint16_t spare4;
     uint16_t spare5;
     uint16_t spare6;
