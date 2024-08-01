@@ -8,77 +8,12 @@ if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE "1")
 endif()
 
+
 add_definitions(-DSDK_EXPORTS)
 
 # Add general optimization flag
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_options(-Ofast)
-endif()
-
-if(WITH_GLOG_DEPENDENCY)
-    find_package(glog 0.3.5 REQUIRED)
-    set(GLOG_BIN_DIR "${glog_DIR}/../../../bin")
-    set(GLOG_BIN_DIR ${GLOG_BIN_DIR} PARENT_SCOPE)
-endif()
-
-if(WITH_PROTOBUF_DEPENDENCY)
-    # Check if submodule exists, and build the library
-    if(EXISTS "${CMAKE_SOURCE_DIR}/protobuf/.git" )
-        message("Found Protobuf, building submodule...")
-        set(PROTOBUF_SUBMODULE "${CMAKE_SOURCE_DIR}/protobuf")
-        execute_process(
-            COMMAND ${CMAKE_COMMAND}
-                -B ${PROTOBUF_SUBMODULE}/build_proto
-                -S ${PROTOBUF_SUBMODULE}/cmake
-                -DCMAKE_INSTALL_PREFIX=${PROTOBUF_SUBMODULE}/install_proto
-                -Dprotobuf_BUILD_TESTS=OFF
-                -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-        )
-        if (WIN32)
-            execute_process(
-                COMMAND ${CMAKE_COMMAND} --build ${PROTOBUF_SUBMODULE}/build_proto --target install --parallel --config ${CMAKE_BUILD_TYPE}
-            )
-        else()
-            execute_process(
-                COMMAND ${CMAKE_COMMAND} --build ${PROTOBUF_SUBMODULE}/build_proto --target install --parallel
-            )
-        endif()
-        set(CMAKE_PREFIX_PATH "${PROTOBUF_SUBMODULE}/install_proto" ${CMAKE_PREFIX_PATH})
-    endif()
-
-    find_package(Protobuf 3.9.0 REQUIRED)
-    protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS src/connections/usb/usb_buffer.proto)
-    get_filename_component(GENERATED_PROTO_FILES_DIR ${PROTO_HDRS} DIRECTORY)
-
-    if ( WITH_NETWORK )
-        # Check if submodule exists, and build the library
-        if(EXISTS "${CMAKE_SOURCE_DIR}/libwebsockets/.git" )
-            message("Found Websockets, building submodule...")
-            set(WEBSOCKETS_SUBMODULE "${CMAKE_SOURCE_DIR}/libwebsockets")
-            execute_process(
-                COMMAND ${CMAKE_COMMAND}
-                    -B ${WEBSOCKETS_SUBMODULE}/build_websockets
-                    -S ${WEBSOCKETS_SUBMODULE}
-                    -DCMAKE_INSTALL_PREFIX=${WEBSOCKETS_SUBMODULE}/install_websockets
-                    -DLWS_WITH_SSL=OFF
-                    -DLWS_STATIC_PIC=ON
-            )
-            if (WIN32)
-                execute_process(
-                    COMMAND ${CMAKE_COMMAND} --build ${WEBSOCKETS_SUBMODULE}/build_websockets --target install --parallel --config ${CMAKE_BUILD_TYPE}
-                )
-            else()
-                execute_process(
-                    COMMAND ${CMAKE_COMMAND} --build ${WEBSOCKETS_SUBMODULE}/build_websockets --target install --parallel
-                )
-            endif()
-            set(CMAKE_PREFIX_PATH "${WEBSOCKETS_SUBMODULE}/install_websockets" ${CMAKE_PREFIX_PATH})
-            endif()
-        find_package(Libwebsockets REQUIRED)
-        set(LWS_CMAKE_DIR ${LWS_CMAKE_DIR} PARENT_SCOPE)
-        protobuf_generate_cpp(NET_PROTO_SRCS NET_PROTO_HRDS src/connections/network/buffer.proto)
-        get_filename_component(GENERATED_NET_PROTO_FILES_DIR ${NET_PROTO_HRDS} DIRECTORY)
-    endif()
 endif()
 
 file(GLOB SOURCES
@@ -174,18 +109,61 @@ add_library(${PROJECT_NAME} SHARED
     ${PLATFORM_HEADERS}
     $<$<BOOL:${WITH_NETWORK}>:${NETWORK_SOURCES}>
     $<$<BOOL:${WITH_NETWORK}>:${NETWORK_HEADERS}>
-    $<$<BOOL:${WITH_NETWORK}>:${NET_PROTO_SRCS}>
-    $<$<BOOL:${WITH_NETWORK}>:${NET_PROTO_HDRS}>
     $<$<BOOL:${WITH_OFFLINE}>:${OFFLINE_SOURCES}>
     $<$<BOOL:${WITH_OFFLINE}>:${OFFLINE_HEADERS}>
-    $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${PROTO_SRCS}>
-    $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${PROTO_HDRS}>
     $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${USB_SOURCES}>
     $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${USB_HEADERS}>
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE crc32)
 target_link_libraries(${PROJECT_NAME} PRIVATE cjson)
+
+if(WITH_GLOG_DEPENDENCY)
+    # Check if submodule exists, and build the library
+    if(NOT WITH_SUBMODULES AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../glog/.git")
+        find_package(glog 0.3.5 REQUIRED)
+    else()
+        target_link_libraries(${PROJECT_NAME} PUBLIC glog)
+    endif()
+endif()
+
+if(WITH_PROTOBUF_DEPENDENCY)
+    # Check if submodule exists, and build the library
+    if(NOT WITH_SUBMODULES AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../protobuf/.git")
+        find_package(Protobuf 3.9.0 REQUIRED)
+    else()
+    target_link_libraries(${PROJECT_NAME} PUBLIC libprotobuf)
+
+    endif()
+    set(PROTO_HDRS "${CMAKE_CURRENT_SOURCE_DIR}/usb_buffer.pb.h")
+    set(PROTO_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/usb_buffer.pb.cc")
+    add_custom_command(OUTPUT ${PROTO_HDRS} ${PROTO_SRCS}
+                        COMMAND protoc usb_buffer.proto -I${CMAKE_CURRENT_SOURCE_DIR}/src/connections/usb --cpp_out=.
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    target_sources(${PROJECT_NAME} PRIVATE ${PROTO_HDRS} ${PROTO_SRCS})
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    if ( WITH_NETWORK )
+        # Check if submodule exists, and build the library
+        if(NOT WITH_SUBMODULES AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libwebsockets/.git")
+                find_package(Libwebsockets REQUIRED)
+        else()
+            target_link_libraries(${PROJECT_NAME} PUBLIC websockets_shared)
+        endif()
+        set(NET_PROTO_HRDS "${CMAKE_CURRENT_SOURCE_DIR}/buffer.pb.h")
+        set(NET_PROTO_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/buffer.pb.cc")
+        add_custom_command(OUTPUT ${NET_PROTO_HRDS} ${NET_PROTO_SRCS}
+                            COMMAND protoc buffer.proto -I ${CMAKE_CURRENT_SOURCE_DIR}/src/connections/network --cpp_out=.
+                            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        target_sources(${PROJECT_NAME} PRIVATE ${NET_PROTO_HRDS} ${NET_PROTO_SRCS})
+        target_include_directories(${PROJECT_NAME} PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../libwebsockets/include)
+    endif()
+endif()
 
 # Add alias to aditof as aditof::aditof
 add_library(aditof::aditof ALIAS aditof)
@@ -212,27 +190,6 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
                        SOVERSION 1.0
                        CXX_STANDARD 11
 )
-
-if ( WITH_NETWORK )
-    target_link_libraries( ${PROJECT_NAME}
-        PRIVATE
-            websockets_shared
-    )
-endif()
-
-if (WITH_PROTOBUF_DEPENDENCY)
-    target_link_libraries( ${PROJECT_NAME}
-        PRIVATE
-            ${Protobuf_LIBRARIES}
-    )
-endif()
-
-if (WITH_GLOG_DEPENDENCY)
-    target_link_libraries( ${PROJECT_NAME}
-    PUBLIC
-        glog::glog
-    )
-endif()
 
 #LIBTOFI_LIBDIR_PATH - path to libtofi_config.so and libtofi_compute.so folder
 set(LIBTOFI_COMPUTE_CLOSED_SOURCE_PATH "${LIBTOFI_LIBDIR_PATH}/libtofi_compute.so")

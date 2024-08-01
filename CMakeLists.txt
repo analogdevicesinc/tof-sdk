@@ -22,6 +22,7 @@ option(WITH_NETWORK "Build network interface?" ON)
 option(WITH_OFFLINE "Build offline interface?" OFF)
 option(WITH_GLOG_DEPENDENCY "Build with GLOG dependency to be used for logging?" OFF)
 option(CI_BUILD "Build for CI" OFF)
+option(WITH_SUBMODULES "Use submodules to build the library" ON)
 
 ######################### Target based Options ################################
 option(NXP "Set to ON when building on NXP" OFF)
@@ -54,6 +55,20 @@ if (GIT_FOUND)
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 	endif()
+
+        # Updating submodules if they exist
+        if (WITH_SUBMODULES)
+                add_definitions(-DWITH_SUBMODULES)
+                message("Updating submodules")
+                execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        RESULT_VARIABLE WITH_SUBMODULES_RESULT)
+
+                if(NOT WITH_SUBMODULES_RESULT EQUAL "0")
+                        message(FATAL_ERROR "Git submodules failed to initialize, check submodules")
+                endif()
+        endif()
+
 endif()
 
 add_definitions(-DADITOFSDK_GIT_COMMIT="${ADITOFSDK_GIT_COMMIT}")
@@ -61,7 +76,7 @@ add_definitions(-DADITOFSDK_GIT_BRANCH="${ADITOFSDK_GIT_BRANCH}")
 
 ############################## Rest of cmake ##################################
 
-# CHeck if CMAKE_BUILD_TYPE has been selected, default: Release
+# Check if CMAKE_BUILD_TYPE has been selected, default: Release
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
@@ -132,6 +147,43 @@ endif()
 
 if(WITH_GLOG_DEPENDENCY)
         add_definitions(-DUSE_GLOG)
+        if(WITH_SUBMODULES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/glog/.git" )
+                # Temporarily store the current compile options
+                set(old_cxx_flags "${CMAKE_CXX_FLAGS}")
+                set(old_c_flags "${CMAKE_C_FLAGS}")
+                # Disable warnings for this subdirectory
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+                set(WITH_GFLAGS OFF CACHE BOOL "Disable gflags")
+                set(POSITION_INDEPENDENT_CODE 1)
+                # Add the subdirectory
+                add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/glog)
+                unset(WITH_GFLAGS)
+                unset(POSITION_INDEPENDENT_CODE)
+                # Restore the old compile options
+                set(CMAKE_CXX_FLAGS "${old_cxx_flags}")
+                set(CMAKE_C_FLAGS "${old_c_flags}")
+        endif()
+endif()
+
+if(WITH_SUBMODULES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libwebsockets/.git" )
+        # Temporarily store the current compile options
+        set(old_cxx_flags "${CMAKE_CXX_FLAGS}")
+        set(old_c_flags "${CMAKE_C_FLAGS}")
+        # Disable warnings for this subdirectory
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+        set(LWS_WITH_SSL 0 CACHE BOOL "Disable SSL support in libwebsockets")
+        set(LWS_STATIC_PIC 1 CACHE BOOL "Enable static position independent code in libwebsockets")
+        set(POSITION_INDEPENDENT_CODE 1)
+        # Add the subdirectory
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libwebsockets)
+        unset(LWS_WITH_SSL)
+        unset(LWS_STATIC_PIC)
+        unset(POSITION_INDEPENDENT_CODE)
+        # Restore the old compile options
+        set(CMAKE_CXX_FLAGS "${old_cxx_flags}")
+        set(CMAKE_C_FLAGS "${old_c_flags}")
 endif()
 
 if(NOT WITH_PROTOBUF_DEPENDENCY)
@@ -140,6 +192,24 @@ if(NOT WITH_PROTOBUF_DEPENDENCY)
         endif()
 else()
         add_definitions(-DUSE_PROTOBUF)
+        if(WITH_SUBMODULES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/protobuf/.git" )
+                # Temporarily store the current compile options
+                set(old_cxx_flags "${CMAKE_CXX_FLAGS}")
+                set(old_c_flags "${CMAKE_C_FLAGS}")
+                # Disable warnings for this subdirectory
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+                set(protobuf_MSVC_STATIC_RUNTIME 0 CACHE BOOL "MSVC static tuntime disabled")
+                set(protobuf_BUILD_TESTS 0 CACHE BOOL "Disable tests for Protobuf")
+                set(POSITION_INDEPENDENT_CODE 1)
+                # Add the subdirectory
+                add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/protobuf/cmake)
+                unset(protobuf_BUILD_TESTS)
+                unset(POSITION_INDEPENDENT_CODE)
+                # Restore the old compile options
+                set(CMAKE_CXX_FLAGS "${old_cxx_flags}")
+                set(CMAKE_C_FLAGS "${old_c_flags}")
+        endif()
 endif()
 
 if(${ON_TARGET})
