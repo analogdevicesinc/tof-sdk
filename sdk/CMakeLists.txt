@@ -21,65 +21,6 @@ if(WITH_GLOG_DEPENDENCY)
     set(GLOG_BIN_DIR ${GLOG_BIN_DIR} PARENT_SCOPE)
 endif()
 
-if(WITH_PROTOBUF_DEPENDENCY)
-    # Check if submodule exists, and build the library
-    if(EXISTS "${CMAKE_SOURCE_DIR}/protobuf/.git" )
-        message("Found Protobuf, building submodule...")
-        set(PROTOBUF_SUBMODULE "${CMAKE_SOURCE_DIR}/protobuf")
-        execute_process(
-            COMMAND ${CMAKE_COMMAND}
-                -B ${PROTOBUF_SUBMODULE}/build_proto
-                -S ${PROTOBUF_SUBMODULE}/cmake
-                -DCMAKE_INSTALL_PREFIX=${PROTOBUF_SUBMODULE}/install_proto
-                -Dprotobuf_BUILD_TESTS=OFF
-                -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-        )
-        if (WIN32)
-            execute_process(
-                COMMAND ${CMAKE_COMMAND} --build ${PROTOBUF_SUBMODULE}/build_proto --target install --parallel --config ${CMAKE_BUILD_TYPE}
-            )
-        else()
-            execute_process(
-                COMMAND ${CMAKE_COMMAND} --build ${PROTOBUF_SUBMODULE}/build_proto --target install --parallel
-            )
-        endif()
-        set(CMAKE_PREFIX_PATH "${PROTOBUF_SUBMODULE}/install_proto" ${CMAKE_PREFIX_PATH})
-    endif()
-
-    find_package(Protobuf 3.9.0 REQUIRED)
-    protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS src/connections/usb/usb_buffer.proto)
-    get_filename_component(GENERATED_PROTO_FILES_DIR ${PROTO_HDRS} DIRECTORY)
-
-    if ( WITH_NETWORK )
-        # Check if submodule exists, and build the library
-        if(EXISTS "${CMAKE_SOURCE_DIR}/libwebsockets/.git" )
-            message("Found Websockets, building submodule...")
-            set(WEBSOCKETS_SUBMODULE "${CMAKE_SOURCE_DIR}/libwebsockets")
-            execute_process(
-                COMMAND ${CMAKE_COMMAND}
-                    -B ${WEBSOCKETS_SUBMODULE}/build_websockets
-                    -S ${WEBSOCKETS_SUBMODULE}
-                    -DCMAKE_INSTALL_PREFIX=${WEBSOCKETS_SUBMODULE}/install_websockets
-                    -DLWS_WITH_SSL=OFF
-                    -DLWS_STATIC_PIC=ON
-            )
-            if (WIN32)
-                execute_process(
-                    COMMAND ${CMAKE_COMMAND} --build ${WEBSOCKETS_SUBMODULE}/build_websockets --target install --parallel --config ${CMAKE_BUILD_TYPE}
-                )
-            else()
-                execute_process(
-                    COMMAND ${CMAKE_COMMAND} --build ${WEBSOCKETS_SUBMODULE}/build_websockets --target install --parallel
-                )
-            endif()
-            set(CMAKE_PREFIX_PATH "${WEBSOCKETS_SUBMODULE}/install_websockets" ${CMAKE_PREFIX_PATH})
-            endif()
-        find_package(Libwebsockets REQUIRED)
-        set(LWS_CMAKE_DIR ${LWS_CMAKE_DIR} PARENT_SCOPE)
-        protobuf_generate_cpp(NET_PROTO_SRCS NET_PROTO_HRDS src/connections/network/buffer.proto)
-        get_filename_component(GENERATED_NET_PROTO_FILES_DIR ${NET_PROTO_HRDS} DIRECTORY)
-    endif()
-endif()
 
 file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
@@ -178,14 +119,45 @@ add_library(${PROJECT_NAME} SHARED
     $<$<BOOL:${WITH_NETWORK}>:${NET_PROTO_HDRS}>
     $<$<BOOL:${WITH_OFFLINE}>:${OFFLINE_SOURCES}>
     $<$<BOOL:${WITH_OFFLINE}>:${OFFLINE_HEADERS}>
-    $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${PROTO_SRCS}>
-    $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${PROTO_HDRS}>
-    $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${USB_SOURCES}>
-    $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${USB_HEADERS}>
+    # $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${PROTO_SRCS}>
+    # $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${PROTO_HDRS}>
+    # $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${USB_SOURCES}>
+    # $<$<BOOL:${WITH_PROTOBUF_DEPENDENCY}>:${USB_HEADERS}>
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE crc32)
-target_link_libraries(${PROJECT_NAME} PRIVATE cjson)
+target_link_libraries(${PROJECT_NAME} PRIVATE crc32 cjson libprotobuf websockets)
+
+if(WITH_PROTOBUF_DEPENDENCY)
+    # Check if submodule exists, and build the library
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/protobuf/.git" )
+        find_package(Protobuf 3.9.0 REQUIRED)
+    endif()
+    set(PROTO_HDRS usb_buffer.pb.h)
+    set(PROTO_SRCS usb_buffer.pb.cc)
+    add_custom_command(OUTPUT ${PROTO_HDRS} ${PROTO_SRCS}
+                        COMMAND protoc usb_buffer.proto -I${CMAKE_SOURCE_DIR}/sdk/src/connections/usb --cpp_out=.)
+    target_sources(${PROJECT_NAME} PRIVATE ${PROTO_HDRS} ${PROTO_SRCS})
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/build/sdk
+    )
+
+    if ( WITH_NETWORK )
+        # Check if submodule exists, and build the library
+        if(NOT EXISTS "${CMAKE_SOURCE_DIR}/libwebsockets/.git" )
+                find_package(Libwebsockets REQUIRED)
+        endif()
+        set(NET_PROTO_HRDS buffer.pb.h)
+        set(NET_PROTO_SRCS buffer.pb.cc)
+        add_custom_command(OUTPUT ${NET_PROTO_HRDS} ${NET_PROTO_SRCS}
+                            COMMAND protoc buffer.proto -I${CMAKE_SOURCE_DIR}/sdk/src/connections/network --cpp_out=.)
+        target_sources(${PROJECT_NAME} PRIVATE ${NET_PROTO_HRDS} ${NET_PROTO_SRCS})
+        target_include_directories(${PROJECT_NAME} PRIVATE
+            ${CMAKE_SOURCE_DIR}/build/sdk
+        )
+    endif()
+endif()
+
+
 
 # Add alias to aditof as aditof::aditof
 add_library(aditof::aditof ALIAS aditof)

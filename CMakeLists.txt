@@ -134,12 +134,51 @@ if(WITH_GLOG_DEPENDENCY)
         add_definitions(-DUSE_GLOG)
 endif()
 
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/libwebsockets/.git" )
+        # Temporarily store the current compile options
+        set(old_cxx_flags "${CMAKE_CXX_FLAGS}")
+        set(old_c_flags "${CMAKE_C_FLAGS}")
+        # Disable warnings for this subdirectory
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
+        set(LWS_WITH_SSL 0 CACHE BOOL "Disable SSL support in libwebsockets")
+        set(LWS_STATIC_PIC 1 CACHE BOOL "Enable static position independent code in libwebsockets")
+        set(POSITION_INDEPENDENT_CODE 1)
+        # Add the subdirectory
+        add_subdirectory(${CMAKE_SOURCE_DIR}/libwebsockets)
+        unset(LWS_WITH_SSL)
+        unset(LWS_STATIC_PIC)
+        unset(POSITION_INDEPENDENT_CODE)
+        # Restore the old compile options
+        set(CMAKE_CXX_FLAGS "${old_cxx_flags}")
+        set(CMAKE_C_FLAGS "${old_c_flags}")
+endif()
+
 if(NOT WITH_PROTOBUF_DEPENDENCY)
         if(NOT ON_TARGET)
                 message(FATAL_ERROR "SDK can be built without protobuf only on target builds!")
         endif()
 else()
         add_definitions(-DUSE_PROTOBUF)
+        if(EXISTS "${CMAKE_SOURCE_DIR}/protobuf/.git" )
+                # Temporarily store the current compile options
+                set(old_cxx_flags "${CMAKE_CXX_FLAGS}")
+                set(old_c_flags "${CMAKE_C_FLAGS}")
+                # Disable warnings for this subdirectory
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fPIC")
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
+                set(protobuf_BUILD_TESTS 0 CACHE BOOL "Disable tests for Protobuf")
+                set(POSITION_INDEPENDENT_CODE 1)
+                # Add the subdirectory
+                add_subdirectory(${CMAKE_SOURCE_DIR}/protobuf/cmake)
+                unset(protobuf_BUILD_TESTS)
+                unset(POSITION_INDEPENDENT_CODE)
+                # Restore the old compile options
+                set(CMAKE_CXX_FLAGS "${old_cxx_flags}")
+                set(CMAKE_C_FLAGS "${old_c_flags}")
+        endif()
+
 endif()
 
 if(${ON_TARGET})
