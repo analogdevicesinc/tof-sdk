@@ -1740,6 +1740,11 @@ aditof::Status Adsd3500Sensor::queryAdsd3500() {
                 modeDetails.numberOfPhases = modeStruct[i].noOfPhases;
                 modeDetails.isPCM = modeStruct[i].isPCM;
 
+                if (modeDetails.baseResolutionWidth == 0 ||
+                    modeDetails.baseResolutionHeight == 0) {
+                    continue;
+                }
+
                 modeDetails.frameContent.clear();
                 if (!modeDetails.isPCM) {
                     modeDetails.frameContent = {"raw",  "depth", "ab",

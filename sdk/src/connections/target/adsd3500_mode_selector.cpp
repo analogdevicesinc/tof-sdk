@@ -156,6 +156,12 @@ aditof::Status Adsd3500ModeSelector::updateConfigurationTable(
         configurationTable.frameHeightInBytes =
             configurationTable.baseResolutionHeight;
         configurationTable.pixelFormatIndex = 1;
+
+        //TO DO: hardcoded for now for the 9pcm usecase
+        if (configurationTable.numberOfPhases == 9) {
+            configurationTable.frameWidthInBytes = 1024;
+            configurationTable.frameHeightInBytes = 2880;
+        }
         return aditof::Status::OK;
     }
 

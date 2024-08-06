@@ -562,6 +562,8 @@ NetworkDepthSensor::setMode(const aditof::DepthSensorModeDetails &type) {
     net->send_buff[m_sensorIndex]
         .mutable_mode_details()
         ->set_base_resolution_height(type.baseResolutionHeight);
+    net->send_buff[m_sensorIndex].mutable_mode_details()->set_is_pcm(
+        type.isPCM);
     net->send_buff[m_sensorIndex].mutable_mode_details()->set_metadata_size(
         type.metadataSize);
     auto content = net->send_buff[m_sensorIndex].mutable_mode_details();
