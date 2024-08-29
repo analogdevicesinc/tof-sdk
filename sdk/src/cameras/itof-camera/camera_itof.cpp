@@ -1165,7 +1165,7 @@ void CameraItof::configureSensorModeDetails() {
             value = "3";
         else if (value == "8")
             value = "2";
-        else 
+        else
             value = "0";
         m_depthSensor->setControl("phaseDepthBits", value);
     } else {
