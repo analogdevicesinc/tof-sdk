@@ -347,7 +347,8 @@ run_docker() {
     sudo docker pull ${docker}
 
     sudo docker run --rm=true \
-			-v `pwd`:/ToF:rw \
+			-v `pwd`:/libaditof:rw \
 			${docker} \
-            /bin/bash -xe ${script} /ToF "${script_args}"
+            /bin/bash -c "chmod -R 777 /libaditof && exec /bin/bash" \
+            /bin/bash -xe ${script} /libaditof "${script_args}"
 }
