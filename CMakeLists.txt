@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(libaditof_project)
+project(adi_tof_project)
 
 ####################### Disable In-source builds ##############################
 if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
@@ -155,7 +155,6 @@ if(WITH_GLOG_DEPENDENCY)
                 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
                 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
                 set(WITH_GFLAGS OFF CACHE BOOL "Disable gflags")
-                set(BUILD_TESTING OFF CACHE BOOL "Disable test builds for glog lib")
                 set(POSITION_INDEPENDENT_CODE 1)
                 # Add the subdirectory
                 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/glog)
