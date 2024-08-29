@@ -1,9 +1,9 @@
 # Windows Build Instructions
 
 
-## Building libaditof
+## Building the SDK only
 
-### Dependencies
+### Pre-requisites
 * Install MS Visual Studio 16 2019
 * Install MS .NET Framework 4.5
 * CMake
@@ -11,10 +11,10 @@
 * Libwebsockets v3.1
 * Protocol Buffers v3.9.0
 
-Windows installer can be downloaded from: https://cmake.org/download/
+### Installing the dependencies
+* CMake
 
-<details>
-  <summary>Build and Install Dependencies manually (OPTIONAL) [Click]</summary>
+Windows installer can be downloaded from: https://cmake.org/download/
 
 * Glog:
 ```console
@@ -26,7 +26,7 @@ cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```
 
-* Libwebsockets (OPTIONAL, only if not using submodules):
+* Libwebsockets:
 ```console
 git clone --branch v3.1-stable --depth 1 https://github.com/warmcat/libwebsockets
 cd libwebsockets
@@ -36,7 +36,7 @@ cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```
 
-* Protobuf (OPTIONAL, only if not using submodules):
+* Protobuf:
 ```console
 git clone --branch v3.9.0 --depth 1 https://github.com/protocolbuffers/protobuf
 cd protobuf
@@ -46,26 +46,47 @@ cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```
 
-* If you do not use the submodules and have installed the dependencied (Glog, Protobuf, Libwebsockets) manually, make sure to add the install directories of Glog, Libwebsockets and Protobuf to the CMAKE_PREFIX_PATH directory of your system.
-
-```console
-CMAKE_PREFIX_PATH="C:\projects\ToF\deps\glog\build_0_6_0\local_path\glog;C:\projects\ToF\deps\protobuf\build_3_9_0\local_path\protobuf;C:\projects\ToF\deps\libwebsockets\build_3_1\local_path\websockets"
-```
-
-</details>
-
-### Download and build libaditof
-
+### Download and build SDK only
 * Follow below steps to download the SDK, generate MS Visual Studio project and build it directly from command line
 ```console
-git clone --branch v5.0.0 https://github.com/analogdevicesinc/libaditof
-cd libaditof
+git clone --branch v5.0.0 https://github.com/analogdevicesinc/ToF
+cd ToF
 git submodule update --init
 mkdir build
 cd build
-cmake -G "Visual Studio 16 2019" ..
+cmake -DCMAKE_PREFIX_PATH="C:\projects\ToF\deps\glog\build_0_6_0\local_path\glog;C:\projects\ToF\deps\protobuf\build_3_9_0\local_path\protobuf;C:\projects\ToF\deps\libwebsockets\build_3_1\local_path\websockets" -G "Visual Studio 16 2019" -DWITH_EXAMPLES=off ..
 cmake --build . --config Release
 ```
+
+## Building the SDK with examples
+
+See [here](../../cmake/readme.md) for details on the cmake options.
+
+### Additional pre-requisites
+* None
+
+### Installing the additional dependencies
+* None
+
+### Build SDK with examples and in Visual Studio
+- Generate the VisualStudio solution
+```console
+git clone --branch v5.0.0 https://github.com/analogdevicesinc/ToF
+cd ToF
+git submodule update --init
+mkdir build
+cd build
+cmake -DCMAKE_PREFIX_PATH="C:\projects\ToF\deps\glog\build_0_6_0\local_path\glog;C:\projects\ToF\deps\protobuf\build_3_9_0\local_path\protobuf;C:\projects\ToF\deps\libwebsockets\build_3_1\local_path\websockets" -G "Visual Studio 16 2019" -DWITH_EXAMPLES=on ..
+```
+- Open 'adi_tof_project.sln' generated in 'ToF\build' in MS Visual Studio 2019
+- Select 'Release' build
+- Application binaries are created in 'ToF\build\example\aditof-demo\Release' directory
+
+
+## SDK with bindings
+
+- Please check the readme files for each type of binding in the [bindings directory](https://github.com/analogdevicesinc/ToF/tree/main/bindings).
+
 
 ## Building the SDK in Visual Studio using the script
 
