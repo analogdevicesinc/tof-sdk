@@ -62,6 +62,9 @@
 #define ADI_DEBUG 1
 #define REQ_COUNT 10
 
+#define NR_OF_MODES_FROM_CCB 10
+#define SIZE_OF_MODES_FROM_CCB 256
+
 struct CalibrationData {
     std::string mode;
     float gain;
@@ -1718,15 +1721,15 @@ aditof::Status Adsd3500Sensor::queryAdsd3500() {
             m_availableModes.clear();
             m_ccbmINIContent.clear();
 
-            CcbMode modeStruct[8];
-            status =
-                adsd3500_read_payload_cmd(0x24, (uint8_t *)&modeStruct[0], 196);
+            CcbMode modeStruct[NR_OF_MODES_FROM_CCB];
+            status = adsd3500_read_payload_cmd(0x24, (uint8_t *)&modeStruct[0],
+                                               SIZE_OF_MODES_FROM_CCB);
             if (status != Status::OK) {
                 LOG(ERROR) << "Failed to read mode map table from ccb!";
                 return status;
             }
 
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < NR_OF_MODES_FROM_CCB; i++) {
                 DepthSensorModeDetails modeDetails;
                 memset(&modeDetails, 0, sizeof(DepthSensorModeDetails));
 

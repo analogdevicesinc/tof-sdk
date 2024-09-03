@@ -175,6 +175,10 @@ aditof::Status Adsd3500ModeSelector::updateConfigurationTable(
                 configurationTable.modeNumber == 1) &&
                m_controls["imagerType"] == "adsd3030") {
         height = 640;
+    } else if (configurationTable.modeNumber == 7 &&
+               m_controls["imagerType"] == "adsd3030") {
+        width = 2560;
+        height = 640;
     } else if (configurationTable.modeNumber >= 2 &&
                m_controls["imagerType"] == "adsd3030") {
         configurationTable.frameWidthInBytes = 1280;
