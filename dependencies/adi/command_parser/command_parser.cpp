@@ -42,7 +42,7 @@ void CommandParser::parseArguments(
         }
     }
 
-    for (int i = 1; i < argc - 1; i++) {
+    for (int i = 1; i < argc; i++) {
         bool mandatory = false;
         int contains_equal = std::string(argv[i]).find("=");
         int is_argument;
@@ -71,6 +71,9 @@ void CommandParser::parseArguments(
         }
         if (mandatory) {
             continue;
+        } else if (std::string(argv[i]).find("-h") != -1 ||
+                   std::string(argv[i]).find("--help") != -1) {
+            m_command_vector.push_back({argv[i], "true"});
         } else if (contains_equal != -1) { // Solves -arg/--arg=value
             m_command_vector.push_back(
                 {std::string(argv[i]).substr(0, contains_equal),
