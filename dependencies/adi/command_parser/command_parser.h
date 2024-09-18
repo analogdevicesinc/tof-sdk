@@ -40,6 +40,33 @@ class CommandParser {
     ~CommandParser() = default;
 
   public:
+    void addCommand(
+        const std::string &command, const std::string &value,
+        std::vector<std::pair<std::string, std::string>> &m_command_vector);
+    void
+    getMandatoryArgs(const int &argc,
+                     const std::map<std::string, struct Argument> &command_map,
+                     std::vector<std::pair<std::string, int>> &arg_position);
+    bool isHelpArg(const std::string &arg);
+    bool hasEqual(const std::string &arg);
+    bool nextArgIsCommand(const std::string &arg);
+    void processFlag(
+        const std::string &arg, int &arg_number,
+        std::vector<std::pair<std::string, std::string>> &m_command_vector);
+    void processEqualArg(
+        const std::string &arg, int &arg_number, const int &euqal_pos,
+        std::vector<std::pair<std::string, std::string>> &m_command_vector);
+    void processNonEqualArg(
+        const std::string &arg, const std::string &value, int &arg_number,
+        std::vector<std::pair<std::string, std::string>> &m_command_vector);
+    void processLongArg(
+        const std::string &arg, int &arg_number,
+        std::vector<std::pair<std::string, std::string>> &m_command_vector,
+        const std::map<std::string, struct Argument> &command_map);
+    void processShorArg(
+        const std::string &arg, int &arg_number,
+        std::vector<std::pair<std::string, std::string>> &m_command_vector,
+        const std::map<std::string, struct Argument> &command_map);
     void parseArguments(int argc, char *argv[],
                         std::map<std::string, struct Argument> command_map);
     int checkArgumentExist(std::map<std::string, struct Argument> &command_map,

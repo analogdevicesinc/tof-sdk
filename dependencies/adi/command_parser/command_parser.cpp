@@ -24,13 +24,15 @@
 
 #include "command_parser.h"
 
-void CommandParser::parseArguments(
-    int argc, char *argv[],
-    std::map<std::string, struct Argument> command_map) {
-    int arg_number = 1;
+void CommandParser::addCommand(
+    const std::string &command, const std::string &value,
+    std::vector<std::pair<std::string, std::string>> &m_command_vector) {
+    m_command_vector.push_back({command, value});
+}
 
-    // Stores mandatory arguments and their location
-    std::vector<std::pair<std::string, int>> arg_position;
+void CommandParser::getMandatoryArgs(
+    const int &argc, const std::map<std::string, struct Argument> &command_map,
+    std::vector<std::pair<std::string, int>> &arg_position) {
     for (auto ct = command_map.begin(); ct != command_map.end(); ct++) {
         if (ct->second.is_mandatory == true) {
             if (ct->second.position == "last") {
@@ -41,81 +43,138 @@ void CommandParser::parseArguments(
             }
         }
     }
+}
+
+bool CommandParser::isHelpArg(const std::string &arg) {
+    return arg.find("-h") != std::string::npos ||
+           arg.find("--help") != std::string::npos;
+}
+
+bool CommandParser::hasEqual(const std::string &arg) {
+    return arg.find("=") != std::string::npos;
+}
+
+bool CommandParser::nextArgIsCommand(const std::string &arg) {
+    return arg.find("-") != std::string::npos;
+}
+
+void CommandParser::processFlag(
+    const std::string &arg, int &arg_number,
+    std::vector<std::pair<std::string, std::string>> &m_command_vector) {
+    addCommand(arg, "true", m_command_vector);
+    arg_number++;
+}
+
+void CommandParser::processEqualArg(
+    const std::string &arg, int &arg_number, const int &euqal_pos,
+    std::vector<std::pair<std::string, std::string>> &m_command_vector) {
+    addCommand(arg.substr(0, euqal_pos), arg.substr(euqal_pos + 1),
+               m_command_vector);
+    arg_number++;
+}
+
+void CommandParser::processNonEqualArg(
+    const std::string &arg, const std::string &value, int &arg_number,
+    std::vector<std::pair<std::string, std::string>> &m_command_vector) {
+    addCommand(arg, value, m_command_vector);
+    arg_number += 2;
+}
+
+void CommandParser::processLongArg(
+    const std::string &arg, int &arg_number,
+    std::vector<std::pair<std::string, std::string>> &m_command_vector,
+    const std::map<std::string, struct Argument> &command_map) {
+    bool arg_found = false;
+    for (const auto &entry : command_map) {
+        const Argument &argument = entry.second;
+        if (argument.long_option == arg) {
+            arg_found = true;
+            if (argument.has_value) {
+                addCommand(arg, "", m_command_vector);
+                arg_number++;
+            } else {
+                processFlag(arg, arg_number, m_command_vector);
+            }
+            break;
+        }
+    }
+    if (!arg_found) {
+        addCommand(arg, "", m_command_vector);
+        arg_number++;
+    }
+}
+
+void CommandParser::processShorArg(
+    const std::string &arg, int &arg_number,
+    std::vector<std::pair<std::string, std::string>> &m_command_vector,
+    const std::map<std::string, struct Argument> &command_map) {
+    auto command = command_map.find(arg);
+    if (command != command_map.end()) {
+        if (command->second.has_value) {
+            addCommand(arg, "", m_command_vector);
+            arg_number++;
+        } else {
+            processFlag(arg, arg_number, m_command_vector);
+        }
+    } else {
+        addCommand(arg, "", m_command_vector);
+        arg_number++;
+    }
+}
+
+void CommandParser::parseArguments(
+    int argc, char *argv[],
+    std::map<std::string, struct Argument> command_map) {
+    int arg_number = 1;
+
+    // Stores mandatory arguments and their location
+    std::vector<std::pair<std::string, int>> arg_position;
+
+    getMandatoryArgs(argc, command_map, arg_position);
 
     for (int i = 1; i < argc; i++) {
         bool mandatory = false;
-        int contains_equal = std::string(argv[i]).find("=");
-        int is_argument;
-        if (i < argc - 1)
-            is_argument = std::string(argv[i + 1]).find("-");
+        int equal_pos = std::string(argv[i]).find("=");
         for (int j = 0; j < arg_position.size(); j++) {
-            if (arg_number == arg_position[j].second &&
-                (std::string(argv[i]).find("-h") == -1 &&
-                 std::string(argv[i]).find("--help") == -1)) {
-                if (contains_equal != -1) {
-                    m_command_vector.push_back(
-                        {std::string(argv[i]).substr(0, contains_equal),
-                         std::string(argv[i]).substr(contains_equal + 1)});
+            if (arg_number == arg_position[j].second && !isHelpArg(argv[i])) {
+                if (hasEqual(argv[i])) {
+                    processEqualArg(argv[i], arg_number, equal_pos,
+                                    m_command_vector);
                 } else if (arg_number != argc - 1) {
-                    m_command_vector.push_back(
-                        {arg_position[j].first, argv[i + 1]});
+                    processNonEqualArg(argv[i], argv[i + 1], arg_number,
+                                       m_command_vector);
                     i++;
                 } else {
-                    m_command_vector.push_back(
-                        {arg_position[j].first, argv[i]});
+                    addCommand(arg_position[j].first, argv[i],
+                               m_command_vector);
                 }
-                arg_number++;
                 mandatory = true;
                 break;
             }
         }
         if (mandatory) {
             continue;
-        } else if (std::string(argv[i]).find("-h") != -1 ||
-                   std::string(argv[i]).find("--help") != -1) {
-            m_command_vector.push_back({argv[i], "true"});
-        } else if (contains_equal != -1) { // Solves -arg/--arg=value
-            m_command_vector.push_back(
-                {std::string(argv[i]).substr(0, contains_equal),
-                 std::string(argv[i]).substr(contains_equal + 1)});
-            arg_number++;
-        } else if (i != argc - 1 && is_argument != 0 &&
-                   i + 1 != argc - 1) { // Solves -arg/--arg value
-            m_command_vector.push_back({argv[i], argv[i + 1]});
+        }
+        if (isHelpArg(argv[i])) {
+            processFlag(argv[i], arg_number, m_command_vector);
+            continue;
+        }
+        if (hasEqual(argv[i])) { // Solves -arg/--arg=value
+            processEqualArg(argv[i], arg_number, equal_pos, m_command_vector);
+            continue;
+        }
+        if (i < argc - 1 && !hasEqual(argv[i]) &&
+            !nextArgIsCommand(argv[i + 1])) { // Solves -arg/--arg value
+            processNonEqualArg(argv[i], argv[i + 1], arg_number,
+                               m_command_vector);
             i++;
-            arg_number += 2;
-        } else if (i != argc - 1 &&
-                   is_argument == 0) { // Solves -arg/--arg -arg value
-            int is_long_arg = std::string(argv[i]).find("--");
-            if (is_long_arg != -1) {
-                bool argument_found = false;
-                for (const auto &entry : command_map) {
-                    if (entry.second.long_option == argv[i]) {
-                        if (!entry.second.has_value) {
-                            m_command_vector.push_back({argv[i], "true"});
-                        } else {
-                            m_command_vector.push_back({argv[i], ""});
-                        }
-                        arg_number++;
-                        argument_found = true;
-                        break;
-                    }
-                }
-                if (!argument_found) {
-                    m_command_vector.push_back({argv[i], ""});
-                    arg_number++;
-                }
-            } else {
-                if (!command_map[argv[i]].has_value) {
-                    m_command_vector.push_back({argv[i], "true"});
-                } else {
-                    m_command_vector.push_back({argv[i], ""});
-                }
-                arg_number++;
-            }
+            continue;
+        }
+        if (std::string(argv[i]).find("--") !=
+            -1) { // Solves -arg/--arg -arg value
+            processLongArg(argv[i], arg_number, m_command_vector, command_map);
         } else {
-            m_command_vector.push_back({argv[i], argv[i + 1]});
-            arg_number++;
+            processShorArg(argv[i], arg_number, m_command_vector, command_map);
         }
     }
 }
