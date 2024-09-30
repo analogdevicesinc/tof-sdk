@@ -157,7 +157,7 @@ const std::vector<DepthSensorModeDetails> adsd3030_standardModes = {
      DriverConfiguration()},
     {4,
      {"ab", "metadata"},
-     0,
+     1,
      0,
      0,
      0,
