@@ -74,7 +74,7 @@ CameraItof::CameraItof(
       m_enableMetaDatainAB(-1), m_enableEdgeConfidence(-1), m_modesVersion(0),
       m_xyzTable({nullptr, nullptr, nullptr}),
       m_imagerType(aditof::ImagerType::UNSET), m_dropFirstFrame(true),
-      m_dropFrameOnce(true) {
+      m_dropFrameOnce(true), m_isOffline(false) {
 
     FloatToLinGenerateTable();
     memset(&m_xyzTable, 0, sizeof(m_xyzTable));
