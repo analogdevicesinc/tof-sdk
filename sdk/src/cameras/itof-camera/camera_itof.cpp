@@ -486,8 +486,8 @@ aditof::Status CameraItof::setMode(const uint8_t &mode) {
         int ret = Algorithms::GenerateXYZTables(
             &m_xyzTable.p_x_table, &m_xyzTable.p_y_table, &m_xyzTable.p_z_table,
             &(pDealias->camera_intrinsics), pDealias->n_sensor_rows,
-            pDealias->n_sensor_cols, m_modeDetailsCache.baseResolutionWidth,
-            m_modeDetailsCache.baseResolutionHeight, pDealias->n_offset_rows,
+            pDealias->n_sensor_cols, m_modeDetailsCache.baseResolutionHeight,
+            m_modeDetailsCache.baseResolutionWidth, pDealias->n_offset_rows,
             pDealias->n_offset_cols, pDealias->row_bin_factor,
             pDealias->col_bin_factor, GEN_XYZ_ITERATIONS);
         if (ret != 0 || !m_xyzTable.p_x_table || !m_xyzTable.p_y_table ||
