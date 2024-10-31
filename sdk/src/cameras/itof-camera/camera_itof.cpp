@@ -350,7 +350,11 @@ aditof::Status CameraItof::setMode(const uint8_t &mode) {
     configureSensorModeDetails();
     m_details.mode = mode;
 
-    LOG(INFO) << "Using parameter list: " << m_ini_depth;
+    LOG(INFO) << "Using the following configuration parameters for mode "
+              << int(mode);
+    for (auto param : m_iniKeyValPairs) {
+        LOG(INFO) << param.first << " : " << param.second;
+    }
 
     status = m_depthSensor->getModeDetails(mode, m_modeDetailsCache);
     if (status != Status::OK) {
@@ -1476,9 +1480,6 @@ CameraItof::loadDepthParamsFromJsonFile(const std::string &pathFile) {
                         }
                     }
                     iniKeyValPairs.emplace(std::string(elem->string), value);
-                    LOG(INFO)
-                        << "Found key value: " << std::string(elem->string)
-                        << " - " << value;
                 }
             }
 
@@ -1504,9 +1505,6 @@ CameraItof::loadDepthParamsFromJsonFile(const std::string &pathFile) {
                         }
                     }
                     iniKeyValPairs.emplace(std::string(elem->string), value);
-                    LOG(INFO)
-                        << "Found key value: " << std::string(elem->string)
-                        << " - " << value;
                 }
             }
             m_depth_params_map.emplace(mode, iniKeyValPairs);
