@@ -1486,9 +1486,6 @@ CameraItof::loadDepthParamsFromJsonFile(const std::string &pathFile) {
                 depthframeType, "configuration-parameters");
 
             if (configuration_param_keys) {
-
-                std::map<std::string, std::string> iniKeyValPairs;
-
                 cJSON *elem;
                 cJSON_ArrayForEach(elem, configuration_param_keys) {
 
