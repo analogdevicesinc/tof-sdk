@@ -47,10 +47,21 @@ NetworkSensorEnumerator::NetworkSensorEnumerator(const std::string &ip)
 NetworkSensorEnumerator::~NetworkSensorEnumerator() = default;
 
 Status NetworkSensorEnumerator::searchSensors() {
-    int sensorCount = 0;
-    int sensorIndex = sensorCount;
-    sensorCount++;
     Status status = Status::OK;
+
+    extern std::vector<std::string> m_connectionList;
+    int sensorIndex = -1, i = 0;
+    for (i = 0; i < m_connectionList.size(); i++) {
+        if (m_connectionList.at(i) == m_ip) {
+            sensorIndex = i;
+            break;
+        }
+    }
+
+    if (sensorIndex == -1) {
+        sensorIndex = m_connectionList.size();
+        m_connectionList.emplace_back(m_ip);
+    }
 
     LOG(INFO) << "Looking for sensors over network: " << m_ip;
 
@@ -59,8 +70,6 @@ Status NetworkSensorEnumerator::searchSensors() {
     if (net->ServerConnect(m_ip) != 0) {
         LOG(WARNING) << "Server Connect Failed";
         net.reset(nullptr);
-        sensorCount--;
-        assert(sensorCount >= 0);
         return Status::UNREACHABLE;
     }
 

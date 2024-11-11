@@ -59,6 +59,19 @@ NetworkDepthSensor::NetworkDepthSensor(const std::string &name,
                                        const std::string &ip)
     : m_implData(new NetworkDepthSensor::ImplData), m_stopServerCheck(false) {
 
+    extern std::vector<std::string> m_connectionList;
+    m_sensorIndex = -1;
+    for (int i = 0; i < m_connectionList.size(); i++) {
+        if (m_connectionList.at(i) == ip) {
+            m_sensorIndex = i;
+        }
+    }
+
+    if (m_sensorIndex == -1) {
+        LOG(ERROR) << "No sensors available at: " << ip;
+        return;
+    }
+
     m_implData->cb = [this]() {
         Network *net = m_implData->handle.net;
 
@@ -95,10 +108,6 @@ NetworkDepthSensor::NetworkDepthSensor(const std::string &name,
             }
         }
     };
-
-    int m_sensorCounter = 0;
-    m_sensorIndex = m_sensorCounter;
-    m_sensorCounter++;
 
     Network *net = new Network(m_sensorIndex);
     m_implData->handle.net = net;

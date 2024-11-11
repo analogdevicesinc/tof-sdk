@@ -82,6 +82,7 @@ bool Network::Thread_Detached[MAX_CAMERA_NUM];
 bool Network::InterruptDetected[MAX_CAMERA_NUM];
 
 void *Network::rawPayloads[MAX_CAMERA_NUM];
+std::vector<std::string> m_connectionList;
 
 /*
 * isServer_Connected(): checks if server is connected

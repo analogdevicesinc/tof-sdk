@@ -36,8 +36,9 @@
 #include <functional>
 #include <libwebsockets.h>
 #include <thread>
+#include <vector>
 
-#define MAX_CAMERA_NUM 4
+#define MAX_CAMERA_NUM 10
 
 class Network;
 
