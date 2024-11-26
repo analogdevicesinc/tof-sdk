@@ -869,16 +869,24 @@ aditof::Status CameraItof::readSerialNumber(std::string &serialNumber,
 }
 
 aditof::Status CameraItof::saveModuleCCB(const std::string &filepath) {
+    aditof::Status status =
+        aditof::Status::GENERIC_ERROR; //Defining with error for ccb read
+
     if (filepath.empty()) {
         LOG(ERROR) << "File path where CCB should be written is empty.";
         return aditof::Status::INVALID_ARGUMENT;
     }
 
     std::string ccbContent;
-    aditof::Status status = readAdsd3500CCB(ccbContent);
+    for (int i = 0; (i < NR_READADSD3500CCB && status != aditof::Status::OK);
+         i++) {
+        LOG(INFO) << "readAdsd3500CCB read attempt nr :" << i;
+        status = readAdsd3500CCB(ccbContent);
+    }
 
     if (status != aditof::Status::OK) {
-        LOG(ERROR) << "Failed to read CCB from adsd3500 module!";
+        LOG(ERROR) << "Failed to read CCB from adsd3500 module after "
+                   << NR_READADSD3500CCB << " reads!";
         return aditof::Status::GENERIC_ERROR;
     }
 

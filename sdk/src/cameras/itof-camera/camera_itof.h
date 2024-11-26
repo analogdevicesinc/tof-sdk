@@ -41,6 +41,8 @@
 #include <map>
 #include <unordered_map>
 
+#define NR_READADSD3500CCB 3
+
 class CameraItof : public aditof::Camera {
   public:
     CameraItof(std::shared_ptr<aditof::DepthSensorInterface> depthSensor,
