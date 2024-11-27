@@ -1378,7 +1378,7 @@ CameraItof::saveDepthParamsToJsonFile(const std::string &savePathFile) {
 }
 
 aditof::Status
-CameraItof::loadDepthParamsFromJsonFile(const std::string &pathFile) {
+CameraItof::loadDepthParamsFromJsonFile(const std::string &pathFile, const int16_t mode_in_use) {
 
     using namespace aditof;
     Status status = Status::OK;
@@ -1449,6 +1449,10 @@ CameraItof::loadDepthParamsFromJsonFile(const std::string &pathFile) {
         }
 
         for (const auto &mode : m_availableModes) {
+
+            if (mode_in_use >= 0 && mode != mode_in_use) {
+                continue;
+            }
 
             std::string modeStr = std::to_string(mode);
 

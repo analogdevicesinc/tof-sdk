@@ -563,8 +563,9 @@ class SDK_API Camera {
      * @param pathFile - Path to load from json file
      * @return Status
      */
-    virtual aditof::Status
-    loadDepthParamsFromJsonFile(const std::string &pathFile) = 0;
+    virtual aditof::Status loadDepthParamsFromJsonFile(
+        const std::string &pathFileloadDepthParamsFromJsonFile,
+        const int16_t mode_in_use = -1) = 0;
 
     /**
      * @brief Reset the ini parameters from the chip and sets the ones stored in CCB
