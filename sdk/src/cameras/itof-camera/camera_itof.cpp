@@ -345,7 +345,22 @@ aditof::Status CameraItof::setMode(const uint8_t &mode) {
         }
     }
 
+    //TO DO: temporary work-arround. The chip needs a stream on/off to
+    //apply the changes for the parameters.
     m_iniKeyValPairs = m_depth_params_map[mode];
+    configureSensorModeDetails();
+    status = m_depthSensor->setMode(mode);
+    if (status != Status::OK) {
+        LOG(WARNING) << "Failed to set frame type";
+        return status;
+    }
+
+    status = start();
+    if (stop() != aditof::Status::OK && status != aditof::Status::OK) {
+        LOG(ERROR) << "Failed to restart the stream!";
+        return status;
+    }
+
     setAdsd3500IniParams(m_iniKeyValPairs);
     configureSensorModeDetails();
     m_details.mode = mode;
@@ -359,12 +374,6 @@ aditof::Status CameraItof::setMode(const uint8_t &mode) {
     status = m_depthSensor->getModeDetails(mode, m_modeDetailsCache);
     if (status != Status::OK) {
         LOG(ERROR) << "Failed to get frame type details!";
-        return status;
-    }
-
-    status = m_depthSensor->setMode(mode);
-    if (status != Status::OK) {
-        LOG(WARNING) << "Failed to set frame type";
         return status;
     }
 
