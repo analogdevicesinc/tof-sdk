@@ -127,6 +127,7 @@ class SDK_API Camera {
      * @return Status
      */
     virtual aditof::Status normalizeABdata(aditof::Frame *frame,
+                                           bool advanceScaling,
                                            bool useLogScaling) = 0;
 
     /**
