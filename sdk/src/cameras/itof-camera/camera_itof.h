@@ -58,7 +58,12 @@ class CameraItof : public aditof::Camera {
     aditof::Status
     getAvailableModes(std::vector<uint8_t> &availableModes) const override;
     aditof::Status requestFrame(aditof::Frame *frame) override;
-    aditof::Status normalizeABdata(aditof::Frame *frame, bool advanceScaling,
+    void normalizeABBuffer(uint16_t *abBuffer,
+                                                 uint16_t abWidth,
+                                                 uint16_t abHeight,
+                                                 bool advanceScaling,
+                                                 bool useLogScaling) override; 
+    aditof::Status normalizeABFrame(aditof::Frame *frame, bool advanceScaling,
                                    bool useLogScaling) override;
     aditof::Status getDetails(aditof::CameraDetails &details) const override;
     aditof::Status
