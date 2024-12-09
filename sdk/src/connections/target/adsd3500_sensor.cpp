@@ -455,6 +455,10 @@ aditof::Status Adsd3500Sensor::stop() {
 aditof::Status Adsd3500Sensor::getAvailableModes(std::vector<uint8_t> &modes) {
     modes.clear();
     for (const auto &availableMode : m_availableModes) {
+#ifndef ENABLE_PCM
+        if (availableMode.isPCM)
+            continue;
+#endif
         modes.emplace_back(availableMode.modeNumber);
     }
     return aditof::Status::OK;
