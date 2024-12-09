@@ -122,7 +122,7 @@ class SDK_API Camera {
      * @brief Scale AB image with logarithmic base 10.
      * @param abBuffer - Pointer to the AB buffer
      * @param abWidth - Width (in pixels) of the AB buffer
-     * @param abHieght - Height (in pixels) of the AB buffer
+     * @param abHeight - Height (in pixels) of the AB buffer
      * @param advanceScaling - If is true then use advance AB scaling.
      * @param useLogScaling - If is false is applied the normalization
      * between 0 and 255,
