@@ -1036,7 +1036,8 @@ aditof::Status Adsd3500Sensor::adsd3500_read_cmd(uint16_t cmd, uint16_t *data,
     return status;
 }
 
-aditof::Status Adsd3500Sensor::adsd3500_write_cmd(uint16_t cmd, uint16_t data) {
+aditof::Status Adsd3500Sensor::adsd3500_write_cmd(uint16_t cmd, uint16_t data,
+                                                  unsigned int usDelay) {
     using namespace aditof;
     struct VideoDev *dev = &m_implData->videoDevs[0];
     Status status = Status::OK;
@@ -1066,6 +1067,10 @@ aditof::Status Adsd3500Sensor::adsd3500_write_cmd(uint16_t cmd, uint16_t data) {
                      << ". Reason: " << strerror(errno) << "(" << errno << ")";
         return Status::GENERIC_ERROR;
     }
+
+    if (usDelay)
+        usleep(usDelay);
+
     return status;
 }
 
