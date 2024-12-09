@@ -126,14 +126,12 @@ class SDK_API Camera {
      * if is true is applied normalization between 0 and 255 and log10
      * @return Status
      */
-    virtual void normalizeABBuffer(uint16_t *abBuffer,
-                                                 uint16_t abWidth,
-                                                 uint16_t abHeight,
-                                                 bool advanceScaling,
-                                                 bool useLogScaling) = 0;
+    virtual void normalizeABBuffer(uint16_t *abBuffer, uint16_t abWidth,
+                                   uint16_t abHeight, bool advanceScaling,
+                                   bool useLogScaling) = 0;
     virtual aditof::Status normalizeABFrame(aditof::Frame *frame,
-                                           bool advanceScaling,
-                                           bool useLogScaling) = 0;
+                                            bool advanceScaling,
+                                            bool useLogScaling) = 0;
 
     /**
      * @brief Gets the current details of the camera

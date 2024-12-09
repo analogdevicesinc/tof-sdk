@@ -666,7 +666,8 @@ aditof::Status CameraItof::requestFrame(aditof::Frame *frame) {
 }
 
 void CameraItof::normalizeABBuffer(uint16_t *abBuffer, uint16_t abWidth,
-                                             uint16_t abHeight, bool advanceScaling, bool useLogScaling) {
+                                   uint16_t abHeight, bool advanceScaling,
+                                   bool useLogScaling) {
 
     size_t imageSize = abHeight * abWidth;
 
@@ -711,8 +712,8 @@ void CameraItof::normalizeABBuffer(uint16_t *abBuffer, uint16_t abWidth,
 }
 
 aditof::Status CameraItof::normalizeABFrame(aditof::Frame *frame,
-                                           bool advanceScaling,
-                                           bool useLogScaling) {
+                                            bool advanceScaling,
+                                            bool useLogScaling) {
 
     using namespace aditof;
     Status status = Status::OK;
@@ -735,9 +736,8 @@ aditof::Status CameraItof::normalizeABFrame(aditof::Frame *frame,
     frameAbDetails.width = 0;
     frame->getDataDetails("ab", frameAbDetails);
 
-    
-    normalizeABBuffer(abVideoData, frameAbDetails.width,
-                      frameAbDetails.height, advanceScaling, useLogScaling);
+    normalizeABBuffer(abVideoData, frameAbDetails.width, frameAbDetails.height,
+                      advanceScaling, useLogScaling);
 
     return status;
 }
@@ -1397,7 +1397,8 @@ CameraItof::saveDepthParamsToJsonFile(const std::string &savePathFile) {
 }
 
 aditof::Status
-CameraItof::loadDepthParamsFromJsonFile(const std::string &pathFile, const int16_t mode_in_use) {
+CameraItof::loadDepthParamsFromJsonFile(const std::string &pathFile,
+                                        const int16_t mode_in_use) {
 
     using namespace aditof;
     Status status = Status::OK;

@@ -58,13 +58,11 @@ class CameraItof : public aditof::Camera {
     aditof::Status
     getAvailableModes(std::vector<uint8_t> &availableModes) const override;
     aditof::Status requestFrame(aditof::Frame *frame) override;
-    void normalizeABBuffer(uint16_t *abBuffer,
-                                                 uint16_t abWidth,
-                                                 uint16_t abHeight,
-                                                 bool advanceScaling,
-                                                 bool useLogScaling) override; 
+    void normalizeABBuffer(uint16_t *abBuffer, uint16_t abWidth,
+                           uint16_t abHeight, bool advanceScaling,
+                           bool useLogScaling) override;
     aditof::Status normalizeABFrame(aditof::Frame *frame, bool advanceScaling,
-                                   bool useLogScaling) override;
+                                    bool useLogScaling) override;
     aditof::Status getDetails(aditof::CameraDetails &details) const override;
     aditof::Status
     getAvailableControls(std::vector<std::string> &controls) const override;
@@ -135,7 +133,8 @@ class CameraItof : public aditof::Camera {
     aditof::Status
     saveDepthParamsToJsonFile(const std::string &savePathFile) override;
 
-    aditof::Status loadDepthParamsFromJsonFile(const std::string &pathFile,
+    aditof::Status
+    loadDepthParamsFromJsonFile(const std::string &pathFile,
                                 const int16_t mode_in_use = -1) override;
 
     aditof::Status
