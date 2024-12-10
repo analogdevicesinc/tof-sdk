@@ -188,7 +188,7 @@ target_include_directories(${PROJECT_NAME}
 set_target_properties( ${PROJECT_NAME} PROPERTIES
                        VERSION ${VERSION}
                        SOVERSION 1.0
-                       CXX_STANDARD 11
+                       CXX_STANDARD 14
 )
 
 #LIBTOFI_LIBDIR_PATH - path to libtofi_config.so and libtofi_compute.so folder
