@@ -42,8 +42,8 @@
 #else
 #include <aditof/log.h>
 #endif
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 static const int skMetaDataBytesCount = 128;
 
@@ -175,7 +175,9 @@ void FrameImpl::allocFrameData(const aditof::FrameDetails &details) {
     //store pointers to the contents described by FrameDetails
     m_implData->m_allData = std::shared_ptr<uint16_t[]>(
         new uint16_t[totalSize], // Allocate the array
-        [](uint16_t* p) { delete[] p; } // Custom deleter to ensure correct deallocation
+        [](uint16_t *p) {
+            delete[] p;
+        } // Custom deleter to ensure correct deallocation
     );
 
     //TODO wouldn`t it be safer to store relative position to .get() instead of absolute address ? TBD @dNechita

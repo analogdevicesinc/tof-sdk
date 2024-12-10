@@ -44,7 +44,8 @@ Frame::Frame(Frame &&) noexcept = default;
 
 Frame &Frame::operator=(Frame &&) noexcept = default;
 
-Frame::Frame(const Frame &op) : m_impl(std::make_unique<FrameImpl>(*op.m_impl)) {}
+Frame::Frame(const Frame &op)
+    : m_impl(std::make_unique<FrameImpl>(*op.m_impl)) {}
 
 Frame &Frame::operator=(const Frame &op) {
     if (this != &op) {
