@@ -32,10 +32,11 @@
 
 #include "frame_impl.h"
 #include <aditof/frame.h>
+#include <memory>
 
 namespace aditof {
 
-Frame::Frame() : m_impl(new FrameImpl) {}
+Frame::Frame() : m_impl(std::make_unique<FrameImpl>()) {}
 
 Frame::~Frame() = default;
 
@@ -43,13 +44,12 @@ Frame::Frame(Frame &&) noexcept = default;
 
 Frame &Frame::operator=(Frame &&) noexcept = default;
 
-Frame::Frame(const Frame &op) : m_impl(new FrameImpl(*op.m_impl)) {}
+Frame::Frame(const Frame &op) : m_impl(std::make_unique<FrameImpl>(*op.m_impl)) {}
 
 Frame &Frame::operator=(const Frame &op) {
     if (this != &op) {
-        m_impl.reset(new FrameImpl(*op.m_impl));
+        m_impl = std::make_unique<FrameImpl>(*op.m_impl);
     }
-
     return *this;
 }
 

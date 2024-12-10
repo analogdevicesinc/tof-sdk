@@ -37,6 +37,7 @@
 #include <aditof/log.h>
 #endif
 #include <cstring>
+#include <memory>
 
 using namespace aditof;
 
