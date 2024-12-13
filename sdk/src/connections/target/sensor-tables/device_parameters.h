@@ -91,7 +91,7 @@ static map<string, string> adsd3100_fullDepth = {{"abThreshMin", "3.0"},
                                                  {"bitsInAB", "16"},
                                                  {"phaseInvalid", "0"},
                                                  {"xyzEnable", "1"},
-                                                 {"fps", "16"}};
+                                                 {"fps", "40"}};
 
 static map<string, string> adsd_PCM = {{"abThreshMin", "3.0"},
                                        {"confThresh", "25.0"},
