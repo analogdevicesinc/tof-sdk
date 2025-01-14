@@ -35,6 +35,9 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <iostream>
+#if ZMQ
+#include <zmq.hpp>
+#endif
 
 #define RX_BUFFER_BYTES (20996420)
 #define MAX_RETRY_CNT 3
@@ -83,6 +86,12 @@ bool Network::InterruptDetected[MAX_CAMERA_NUM];
 
 void *Network::rawPayloads[MAX_CAMERA_NUM];
 std::vector<std::string> m_connectionList;
+
+#if ZMQ
+std::unique_ptr<zmq::socket_t> client_socket;
+std::unique_ptr<zmq::context_t> zmq_context;
+bool bZmq_init = false;
+#endif
 
 /*
 * isServer_Connected(): checks if server is connected
@@ -209,6 +218,18 @@ int Network::ServerConnect(const std::string &ip) {
                        server_msg) == 0) {
                 /*Server is connected successfully*/
                 cout << "Conn established" << endl;
+#ifdef ZMQ
+                if (bZmq_init == false) { // Initialize ZMQ only once
+                    zmq_context = std::make_unique<zmq::context_t>(1);
+                    client_socket = std::make_unique<zmq::socket_t>(
+                        *zmq_context, zmq::socket_type::pull);
+                    client_socket->setsockopt(
+                        ZMQ_RCVTIMEO,
+                        1100); // TODO: Base ZMQ_RCVTIMEO on the frame rate
+                    client_socket->connect("tcp://10.43.0.1:5555");
+                    bZmq_init = true;
+                }
+#endif
                 return 0;
             } else {
                 /*Another client is connected already*/
@@ -229,6 +250,16 @@ int Network::ServerConnect(const std::string &ip) {
 
     return -1;
 }
+
+#if ZMQ
+int32_t zmq_getFrame(uint16_t *buffer, uint32_t buf_size) {
+    zmq::message_t message;
+    client_socket->recv(message, zmq::recv_flags::none);
+    //memccpy(buffer, message.data(), message.size(), buf_size);
+    memcpy(buffer, message.data(), message.size());
+    return 0;
+}
+#endif
 
 /*
 * sendCommand(): send data to server

@@ -607,8 +607,18 @@ NetworkDepthSensor::setMode(const aditof::DepthSensorModeDetails &type) {
     return status;
 }
 
+#if ZMQ
+extern int32_t zmq_getFrame(uint16_t *buffer, uint32_t buf_size);
+#endif
+
 aditof::Status NetworkDepthSensor::getFrame(uint16_t *buffer) {
     using namespace aditof;
+   
+#if ZMQ
+    aditof::Status status = aditof::Status::OK;
+    zmq_getFrame(buffer, 0);
+    return status;
+#else
 
     Network *net = m_implData->handle.net;
     std::unique_lock<std::mutex> mutex_lock(m_implData->handle.net_mutex);
@@ -644,6 +654,7 @@ aditof::Status NetworkDepthSensor::getFrame(uint16_t *buffer) {
     }
 
     return status;
+#endif
 }
 
 aditof::Status NetworkDepthSensor::getAvailableControls(
