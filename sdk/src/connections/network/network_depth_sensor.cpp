@@ -318,6 +318,10 @@ aditof::Status NetworkDepthSensor::open() {
     return status;
 }
 
+#ifdef ASIO
+extern int32_t asio_connect(int timeout_seconds);
+#endif //ASIO
+
 aditof::Status NetworkDepthSensor::start() {
     using namespace aditof;
 
@@ -349,6 +353,10 @@ aditof::Status NetworkDepthSensor::start() {
     }
 
     Status status = static_cast<Status>(net->recv_buff[m_sensorIndex].status());
+
+#ifdef ASIO
+    asio_connect(5);
+#endif //ASIO
 
     return status;
 }
@@ -607,16 +615,24 @@ NetworkDepthSensor::setMode(const aditof::DepthSensorModeDetails &type) {
     return status;
 }
 
-#if ZMQ
+#ifdef ZMQ
 extern int32_t zmq_getFrame(uint16_t *buffer, uint32_t buf_size);
-#endif
+#endif //ZMQ
+#ifdef ASIO
+extern int32_t asio_getFrame(uint16_t *buffer, uint32_t buf_size);
+#endif //ASIO
 
 aditof::Status NetworkDepthSensor::getFrame(uint16_t *buffer) {
     using namespace aditof;
    
-#if ZMQ
+#ifdef ZMQ
     aditof::Status status = aditof::Status::OK;
     zmq_getFrame(buffer, 0);
+    return status;
+
+#elif defined(ASIO)
+    aditof::Status status = aditof::Status::OK;
+    asio_getFrame(buffer, 0);
     return status;
 #else
 

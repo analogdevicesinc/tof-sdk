@@ -35,9 +35,12 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <iostream>
-#if ZMQ
+#ifdef ZMQ
 #include <zmq.hpp>
-#endif
+#endif //ZMQ
+#ifdef ASIO
+#include <boost/asio.hpp>
+#endif //ASIO
 
 #define RX_BUFFER_BYTES (20996420)
 #define MAX_RETRY_CNT 3
@@ -251,7 +254,7 @@ int Network::ServerConnect(const std::string &ip) {
     return -1;
 }
 
-#if ZMQ
+#ifdef ZMQ
 int32_t zmq_getFrame(uint16_t *buffer, uint32_t buf_size) {
     zmq::message_t message;
     client_socket->recv(message, zmq::recv_flags::none);
@@ -259,7 +262,151 @@ int32_t zmq_getFrame(uint16_t *buffer, uint32_t buf_size) {
     memcpy(buffer, message.data(), message.size());
     return 0;
 }
-#endif
+#endif //ZMQ
+
+#ifdef ASIO
+std::unique_ptr<boost::asio::ip::tcp::socket> asio_socket;
+boost::asio::io_context io_context;
+
+int32_t asio_connect(int timeout_seconds) {
+    std::string host = "10.43.0.1";
+    std::string port = "12345";
+    boost::asio::ip::tcp::resolver resolver(io_context);
+    auto endpoints = resolver.resolve(host, port);
+
+    asio_socket = std::make_unique<boost::asio::ip::tcp::socket>(io_context);
+
+    boost::asio::steady_timer timer(io_context);
+    bool timeout_occurred = false;
+
+    // Set up the timer
+    timer.expires_after(std::chrono::seconds(timeout_seconds));
+    timer.async_wait([&](const boost::system::error_code &ec) {
+        if (!ec) {
+            timeout_occurred = true;
+            asio_socket->close();
+        }
+    });
+
+    // Set up the async connect
+    boost::system::error_code ec;
+    boost::asio::async_connect(
+        *asio_socket, endpoints,
+        [&](const boost::system::error_code &error, const auto &) {
+            ec = error;
+            timer.cancel();
+        });
+
+    // Run the io_context to perform the async operations
+    io_context.run();
+
+    if (timeout_occurred) {
+        std::cerr << "Connection timed out" << std::endl;
+        return -1;
+    }
+
+    if (ec) {
+        std::cerr << "Error connecting: " << ec.message() << std::endl;
+        return -1;
+    }
+    return 0;
+}
+
+std::size_t
+readFromSocket(std::unique_ptr<boost::asio::ip::tcp::socket> &socket_ptr,
+               uint8_t *buffer, boost::system::error_code &ec,
+               size_t bytes_to_read = 0) {
+    // Dereference the unique_ptr to call read_some
+    return boost::asio::read(
+        *socket_ptr, boost::asio::buffer(buffer, bytes_to_read), 
+            boost::asio::transfer_exactly(bytes_to_read));   
+}
+
+int32_t asio_getFrame(uint16_t *buffer, uint32_t buf_size) {
+    // Read the frame size sent by the server
+    uint64_t frame_size_net = 0;
+    boost::asio::read(
+        *asio_socket,
+        boost::asio::buffer(&frame_size_net, sizeof(frame_size_net)),
+        boost::asio::transfer_exactly(sizeof(frame_size_net)));
+    std::size_t frame_size = ntohl(static_cast<u_long>(frame_size_net));
+    if (frame_size != 0) {
+        //std::cout << "[Client] Frame size received: " << frame_size
+        //          << " bytes.\n";
+    } else {
+        std::cerr << "[Client] Error: Frame size is 0.\n";
+        return -1;
+    }
+
+    // Temporary buffer for incoming data (we'll read in chunks of 64KB)
+    uint8_t *temp_buf_ptr = (uint8_t *)buffer;
+
+    // Variables to track frame data
+    std::size_t total_bytes_for_current_frame = 0;
+    std::size_t total_frames_received = 0;
+
+    // Optionally track total bytes and time for throughput calculation
+    std::size_t total_bytes_received = 0;
+
+    while (true) {
+        std::size_t bytes_needed = frame_size - total_bytes_for_current_frame;
+
+        // Read a single frame
+        boost::system::error_code ec;
+        std::size_t len =
+            readFromSocket(asio_socket, temp_buf_ptr, ec, bytes_needed);
+        temp_buf_ptr += len; 
+        std::cout << len << std::endl;
+
+        if (ec == boost::asio::error::eof) {
+            // Server closed connection gracefully
+            std::cout << "[Client] Connection closed by server.\n";
+            return -2;
+        } else if (ec) {
+            // Some other error occurred
+            std::cerr << "[Client] Error receiving data: " << ec.message()
+                      << std::endl;
+            return -3;
+        }
+
+        // We read 'len' bytes into temp_buf. We need to accumulate them
+        // towards the current frame.
+        std::size_t offset = 0;
+        while (offset < len) {
+
+            // How many bytes did we actually receive (remaining in temp_buf)?
+            std::size_t bytes_available = len - offset;
+
+            // We take the smaller of the two
+            std::size_t chunk = (bytes_available < bytes_needed)
+                                    ? bytes_available
+                                    : bytes_needed;
+
+            // "Accumulate" those chunk bytes
+            total_bytes_for_current_frame += chunk;
+
+            // Move the offset
+            offset += chunk;
+            total_bytes_received += chunk; // for throughput stats
+
+            // If we have now accumulated exactly one frame
+            if (total_bytes_for_current_frame == frame_size) {
+                total_frames_received++;
+                std::cout << "[Client] Received frame #"
+                          << total_frames_received << " (" << frame_size
+                          << " bytes). " << std::endl;
+
+                // Reset for the next frame
+                total_bytes_for_current_frame = 0;
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+#endif //ASIO
+
 
 /*
 * sendCommand(): send data to server
