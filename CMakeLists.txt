@@ -19,6 +19,7 @@ set(VERSION "${ADITOF_VERSION_MAJOR}.${ADITOF_VERSION_MINOR}.${ADITOF_VERSION_PA
 ############################### Options #######################################
 option(WITH_DOC "Build documentation?" OFF)
 option(WITH_NETWORK "Build network interface?" ON)
+option(WITH_ZEROMQ "Use ZeroMQ as the network protocol for frames?" ON)
 option(WITH_OFFLINE "Build offline interface?" OFF)
 option(WITH_GLOG_DEPENDENCY "Build with GLOG dependency to be used for logging?" OFF)
 option(CI_BUILD "Build for CI" OFF)
@@ -116,6 +117,10 @@ endif()
 
 if (WITH_NETWORK)
         add_definitions(-DHAS_NETWORK)
+        if (WITH_ZEROMQ)
+            add_subdirectory(libzmq)
+            add_definitions(-DZMQ)
+        endif()
 endif()
 
 set(RESOURCES_DIR "${CMAKE_BINARY_DIR}/resources")
