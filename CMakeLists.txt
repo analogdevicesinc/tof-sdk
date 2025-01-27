@@ -181,8 +181,18 @@ if(WITH_SUBMODULES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libwebsockets/.git" )
 
 
 	# Disable warnings for this subdirectory
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=enum-int-mismatch")
+        #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")
+        #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=enum-int-mismatch")
+
+
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
+            message(STATUS "Applying flags for GCC/G++ version 12.x")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=enum-int-mismatch")
+        else()
+            message(STATUS "Skipping flags for GCC/G++ version ${CMAKE_CXX_COMPILER_VERSION}")
+        endif()
+
 
         # Disable warnings for this subdirectory
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
