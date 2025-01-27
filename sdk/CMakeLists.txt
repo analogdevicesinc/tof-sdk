@@ -8,8 +8,11 @@ if(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE "1")
 endif()
 
-
 add_definitions(-DSDK_EXPORTS)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include cstdint")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include stdint.h")
+
 
 # Add general optimization flag
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -189,6 +192,9 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
                        VERSION ${VERSION}
                        SOVERSION 1.0
                        CXX_STANDARD 14
+		       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+                       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+                       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
 #LIBTOFI_LIBDIR_PATH - path to libtofi_config.so and libtofi_compute.so folder
