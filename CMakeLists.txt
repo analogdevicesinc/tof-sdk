@@ -12,7 +12,7 @@ endif()
 ############################### Version #######################################
 set(ADITOF_VERSION_MAJOR 6)
 set(ADITOF_VERSION_MINOR 0)
-set(ADITOF_VERSION_PATCH 0)
+set(ADITOF_VERSION_PATCH 0-BETA)
 
 set(VERSION "${ADITOF_VERSION_MAJOR}.${ADITOF_VERSION_MINOR}.${ADITOF_VERSION_PATCH}")
 
@@ -79,7 +79,6 @@ add_definitions(-DADITOFSDK_GIT_BRANCH="${ADITOFSDK_GIT_BRANCH}")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 # Check if CMAKE_BUILD_TYPE has been selected, default: Release
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -179,6 +178,22 @@ if(WITH_SUBMODULES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libwebsockets/.git" )
         # Temporarily store the current compile options
         set(old_cxx_flags "${CMAKE_CXX_FLAGS}")
         set(old_c_flags "${CMAKE_C_FLAGS}")
+
+
+	# Disable warnings for this subdirectory
+        #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")
+        #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=enum-int-mismatch")
+
+
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
+            message(STATUS "Applying flags for GCC/G++ version 12.x")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=enum-int-mismatch")
+        else()
+            message(STATUS "Skipping flags for GCC/G++ version ${CMAKE_CXX_COMPILER_VERSION}")
+        endif()
+
+
         # Disable warnings for this subdirectory
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
