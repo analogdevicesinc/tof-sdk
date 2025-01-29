@@ -179,20 +179,15 @@ if(WITH_SUBMODULES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libwebsockets/.git" )
         set(old_cxx_flags "${CMAKE_CXX_FLAGS}")
         set(old_c_flags "${CMAKE_C_FLAGS}")
 
-
-	# Disable warnings for this subdirectory
-        #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")
-        #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=enum-int-mismatch")
-
-
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
-            message(STATUS "Applying flags for GCC/G++ version 12.x")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")
-            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=enum-int-mismatch")
-        else()
-            message(STATUS "Skipping flags for GCC/G++ version ${CMAKE_CXX_COMPILER_VERSION}")
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32)
+            if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
+                message(STATUS "Applying flags for GCC/G++ version 13.x or higher")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=enum-int-mismatch")
+            else()
+                message(STATUS "Skipping flags for GCC/G++ version ${CMAKE_CXX_COMPILER_VERSION}")
+            endif()
         endif()
-
 
         # Disable warnings for this subdirectory
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

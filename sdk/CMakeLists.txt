@@ -10,8 +10,15 @@ endif()
 
 add_definitions(-DSDK_EXPORTS)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include cstdint")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include stdint.h")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
+        message(STATUS "Applying flags for GCC/G++ version 13.x or higher")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include cstdint")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include stdint.h")
+    else()
+        message(STATUS "Skipping flags for GCC/G++ version ${CMAKE_CXX_COMPILER_VERSION}")
+    endif()
+endif()
 
 
 # Add general optimization flag
@@ -188,14 +195,27 @@ target_include_directories(${PROJECT_NAME}
         ${OPENSSL_INCLUDE_DIRS}
 )
 
-set_target_properties( ${PROJECT_NAME} PROPERTIES
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
+        message(STATUS "Applying flags for GCC/G++ version 13.x or higher")
+        set_target_properties( ${PROJECT_NAME} PROPERTIES
                        VERSION ${VERSION}
                        SOVERSION 1.0
                        CXX_STANDARD 14
-		       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+                       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
                        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
                        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
+        )
+    endif()
+else()
+    set_target_properties( ${PROJECT_NAME} PROPERTIES
+                           VERSION ${VERSION}
+                           SOVERSION 1.0
+                           CXX_STANDARD 14
+    )
+endif()
+
 
 #LIBTOFI_LIBDIR_PATH - path to libtofi_config.so and libtofi_compute.so folder
 set(LIBTOFI_COMPUTE_CLOSED_SOURCE_PATH "${LIBTOFI_LIBDIR_PATH}/libtofi_compute.so")
