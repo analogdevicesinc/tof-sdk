@@ -179,7 +179,7 @@ if(WITH_SUBMODULES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libwebsockets/.git" )
         set(old_cxx_flags "${CMAKE_CXX_FLAGS}")
         set(old_c_flags "${CMAKE_C_FLAGS}")
 
-        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32)
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT (WIN32 OR ON_TARGET))
             if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
                 message(STATUS "Applying flags for GCC/G++ version 13.x or higher")
                 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=enum-int-mismatch")

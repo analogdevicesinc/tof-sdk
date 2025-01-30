@@ -10,7 +10,7 @@ endif()
 
 add_definitions(-DSDK_EXPORTS)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT (WIN32 OR ON_TARGET))
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
         message(STATUS "Applying flags for GCC/G++ version 13.x or higher")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include cstdint")
@@ -196,7 +196,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT WIN32)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT (WIN32 OR ON_TARGET))
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
         message(STATUS "Applying flags for GCC/G++ version 13.x or higher")
         set_target_properties( ${PROJECT_NAME} PROPERTIES

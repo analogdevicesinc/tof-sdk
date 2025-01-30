@@ -17,9 +17,11 @@ ARGS="$2"
 mkdir -p build
 mkdir ../libs
 
+sudo apt-get install libpthread-stubs0-dev
+
 pushd build
 cmake .. ${ARGS} -DCMAKE_PREFIX_PATH="${GLOG_INSTALL_DIR};${PROTOBUF_INSTALL_DIR};${WEBSOCKETS_INSTALL_DIR};${OPENCV_INSTALL_DIR}"
-make -j${NUM_JOBS}
+make -j
 popd #build
 
 popd # ${project_dir}
